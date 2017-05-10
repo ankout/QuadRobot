@@ -26,9 +26,19 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>src/BusDevice.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-3-PROJECT_LOC/eclipse/cpp-neon/eclipse/exploringBB/library/bus/BusDevice.cpp</locationURI>
+		</link>
+		<link>
 			<name>src/GPIO.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-3-PROJECT_LOC/eclipse/cpp-neon/eclipse/exploringBB/chp06/GPIO/GPIO.cpp</locationURI>
+		</link>
+		<link>
+			<name>src/SPIDevice.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-3-PROJECT_LOC/eclipse/cpp-neon/eclipse/exploringBB/library/bus/SPIDevice.cpp</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

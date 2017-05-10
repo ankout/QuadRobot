@@ -35,6 +35,7 @@
 								<option id="gnu.cpp.compiler.option.include.paths.1494561634" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/include/arm-linux-gnueabihf/c++/4.9"/>
 									<listOptionValue builtIn="false" value="/home/acardi/git/QuadRobot/QuadRobotBBB/Include"/>
+									<listOptionValue builtIn="false" value="/home/acardi/eclipse/cpp-neon/eclipse/exploringBB/library"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1592959562" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
