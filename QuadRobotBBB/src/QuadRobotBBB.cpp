@@ -22,7 +22,7 @@ int main()
 	unsigned char preamble[SPI_PREAMBLE_BYTES], send[3], receive[3];
 	unsigned char i;
 
-	cout << "Starting_1..." << endl;
+	cout << "Starting_111..." << endl;
 	SPIDevice *busDevice = new SPIDevice(1,0); //Using second SPI bus (both loaded)
 	busDevice->setSpeed(4000000);      // Have access to SPI Device object
 	busDevice->setMode(SPIDevice::MODE0);
