@@ -27,7 +27,7 @@ int main()
 
 	unsigned char i;
 
-	cout << "Starting_111..." << endl;
+	cout << "Starting_1111..." << endl;
 	SPIDevice *busDevice = new SPIDevice(1,0); //Using second SPI bus (both loaded)
 	busDevice->setSpeed(400000);      // Have access to SPI Device object
 	busDevice->setMode(SPIDevice::MODE0);
