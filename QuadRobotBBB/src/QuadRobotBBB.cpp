@@ -24,10 +24,37 @@ int main()
 	unsigned char motorCommand[SPI_TRANSMISSION_SIZE], receive[SPI_TRANSMISSION_SIZE], counter = 0;
 	unsigned char check1Tx, check2Tx;
 	unsigned short int sum1Tx, sum2Tx;
+	unsigned short int OL, IL, IIL;
+	unsigned short int posInData;
+	unsigned short int i;
 
-	unsigned char i;
+	struct FSR_PCBA {
+		unsigned char firmwareVersion;
+		unsigned short data[24];
+		unsigned char error;
+		unsigned char chksum1;
+		unsigned char chksum2;
+	};
 
-	cout << "Starting_1111..." << endl;
+	struct LEG_PCBA {
+			unsigned char firmwareVersion;
+			unsigned short encoder[5];
+			unsigned short motCurrent[5];
+			unsigned char error;
+			unsigned char chksum1;
+			unsigned char chksum2;
+	};
+
+	struct MAIN_PCBA {
+		unsigned char firmwareVersion;
+		unsigned char error;
+	};
+
+	FSR_PCBA FSR[5];
+	LEG_PCBA LEG[5];
+	MAIN_PCBA MAIN;
+
+	cout << "Starting_11..." << endl;
 	SPIDevice *busDevice = new SPIDevice(1,0); //Using second SPI bus (both loaded)
 	busDevice->setSpeed(400000);      // Have access to SPI Device object
 	busDevice->setMode(SPIDevice::MODE0);
@@ -53,24 +80,146 @@ int main()
 	motorCommand[SPI_PREAMBLE_BYTES+SPI_TX_DATA_SIZE] = check1Tx;
 	motorCommand[SPI_PREAMBLE_BYTES+SPI_TX_DATA_SIZE+1] = check2Tx;
 
-	//for (i = (SPI_PREAMBLE_BYTES+SPI_TX_DATA_SIZE); i < (SPI_PREAMBLE_BYTES+SPI_TX_DATA_SIZE+SPI_CHECKSUM_SIZE); i++)
-	//{
-	//	motorCommand[i] = 0xAA;
-	//}
+	// Fill the rest with 0s
+	for (i = (SPI_PREAMBLE_BYTES+SPI_TX_DATA_SIZE+SPI_CHECKSUM_SIZE); i < SPI_TRANSMISSION_SIZE; i++)
+	{
+		motorCommand[i] = 0xBB;
+	}
 
-	//send[0] = 0b00000001; // The Start Bit followed
-	// Set the SGL/Diff and D mode -- e.g., 1000 means single ended CH0 value
-	//send[1] = 0b10000000; // The MSB is the Single/Diff bit and it is followed by 000 for CH0
-	//send[2] = 0;          // This byte doesn't need to be set, just for a clear display
 	while (1)
 	{
+		posInData = 0;
 		busDevice->transfer(motorCommand, receive, SPI_TRANSMISSION_SIZE);
-		cout << (int)counter << ") Response bytes are " << (int)receive[1] << "," << (int)receive[2] << endl;
+
+		posInData = 5;
+		for (OL = 0; OL < 5; OL++)
+		{
+			FSR[OL].firmwareVersion = receive[posInData];
+			posInData++;
+
+			for (IL = 0; IL < 2*NUM_FSRS; IL++)
+			{
+				// These are 10 bit values sent with the upper byte first
+				FSR[OL].data[IL] = combineValues(receive[2*IL+posInData]&0b00000011, receive[2*IL+1+posInData]);
+			}
+
+			posInData = posInData+48;
+			FSR[OL].error = receive[posInData];
+			posInData++;
+			FSR[OL].chksum1 = receive[posInData];
+			posInData++;
+			FSR[OL].chksum2 = receive[posInData];
+			posInData++;
+
+			LEG[OL].firmwareVersion = receive[posInData];
+			posInData++;
+
+			for (IL = 0; IL < 2*NUM_ENCODERS; IL++)
+			{
+				// These are 10 bit values sent with the upper byte first
+				LEG[OL].encoder[IL] = combineValues(receive[2*IL+posInData]&0b00000011, receive[2*IL+1+posInData]);
+			}
+
+			posInData = posInData+10;
+
+			for (IL = 0; IL < 2*NUM_ENCODERS; IL++)
+			{
+				// These are 10 bit values sent with the upper byte first
+				LEG[OL].motCurrent[IL] = combineValues(receive[2*IL+posInData]&0b00000011, receive[2*IL+1+posInData]);
+			}
+
+			posInData = posInData+10;
+			LEG[OL].error = receive[posInData];
+			posInData++;
+			LEG[OL].chksum1 = receive[posInData];
+			posInData++;
+			LEG[OL].chksum2 = receive[posInData];
+			posInData++;
+		}
+
+		MAIN.firmwareVersion = receive[posInData];
+		posInData++;
+		MAIN.error = receive[posInData];
+		posInData++;
+
+		// Need to add checksum calculation to main loop eventually
+		cout << "Preamble bytes are: " << (int)receive[1] << " " << (int)receive[2] << " " << (int)receive[3] << " " << (int)receive[4] << endl;
+
+		for (OL = 0; OL < 5; OL++)
+		{
+			cout << "--------- [FSR " << (int)(OL+1) << "]------------" << endl;
+			cout << "Firmware Version: " << (int)FSR[OL].firmwareVersion << endl;
+			cout << "Error Flag: " << (int)FSR[OL].error << endl;
+			cout << "Checksum 1: " << (int)FSR[OL].chksum1 << endl;
+			cout << "Checksum 2: " << (int)FSR[OL].chksum2 << endl;
+
+			for (IL = 0; IL < 2; IL++)
+			{
+				cout << "FSR Data "<< (int)(IL*12+1) << "-" << (int)((IL+1)*12) << ": ";
+
+				for (IIL = 0; IIL < 12; IIL++)
+				{
+					cout << (int)FSR[OL].data[IL*12+IIL] << " ";
+				}
+
+				cout << endl;
+			}
+
+			cout << "--------- [LEG " << (int)(OL+1) << "]------------" << endl;
+			cout << "Firmware Version: " << (int)LEG[OL].firmwareVersion << endl;
+			cout << "Error Flag: " << (int)LEG[OL].error << endl;
+			cout << "Checksum 1: " << (int)LEG[OL].chksum1 << endl;
+			cout << "Checksum 2: " << (int)LEG[OL].chksum2 << endl;
+
+			cout << "Encoder Data: ";
+
+			for (IL = 0; IL < NUM_ENCODERS; IL++)
+			{
+				cout << (int)LEG[OL].encoder[IL] << " ";
+			}
+
+			cout << endl;
+
+			cout << "Motor Current Data: ";
+
+			for (IL = 0; IL < NUM_ENCODERS; IL++)
+			{
+				cout << (int)LEG[OL].motCurrent[IL] << " ";
+			}
+
+			cout << endl;
+		}
+
+		cout << "---------- [MAIN]------------" << endl;
+		cout << "Firmware Version: " << (int)MAIN.firmwareVersion << endl;
+		cout << "Error Flag: " << (int)MAIN.error << endl;
+
+		counter = 0;
+
+		for (OL = 0; OL < SPI_TRANSMISSION_SIZE; OL++)
+		{
+			if (counter == 0)
+			{
+				cout << endl << (unsigned int)OL << ") ";
+				counter = 10;
+			}
+
+			cout << (unsigned int)receive[(unsigned int)OL] << "  ";
+			counter--;
+		}
+
+		cout << endl;
+
+
+		// NUM_LEG_PCBS*LEG_DATA_SIZE_RX <--- This does not include the error check
+
+
+		//cout << (int)counter << ") Response bytes are " << (int)receive[1] << "," << (int)receive[2] << endl;
 
 		// Use the 8-bits of the second value and the two LSBs of the first value
-		int value = combineValues(receive[1]&0b00000011, receive[2]);
-		cout << "This is the value " << value << " out of 1024." << endl;
-		usleep(1000000);
-		counter++;
+		//int value = combineValues(receive[1]&0b00000011, receive[2]);
+
+		usleep(10000000);
+		//counter++;
 	}
 }
