@@ -17,5 +17,29 @@
 // LEG
 #define NUM_ENCODERS 5
 
+struct FSR_PCBA
+{
+	unsigned char firmwareVersion;
+	unsigned short data[24];
+	unsigned char error;
+	unsigned char chksum1;
+	unsigned char chksum2;
+};
+
+struct LEG
+{
+	unsigned char firmwareVersion_;
+	unsigned short encoder[5];
+	unsigned short motCurrent[5];
+	unsigned char error_;
+	unsigned char chksum1_;
+	unsigned char chksum2_;
+};
+
+struct MAIN_PCBA
+{
+	unsigned char firmwareVersion;
+	unsigned char error;
+};
 
 #endif /* TYPEDEFS_H_ */
