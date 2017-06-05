@@ -101,7 +101,6 @@ int main()
 			//FSR[0L].firmwareVersion = (unsigned char)temp;
 			//cout << "temp = " << (int)(temp) << endl;
 
-			//FSR[OL].firmwareVersion = 67;
 			posInData++;
 			//cout << "OL = " << (int)OL<< " - 3) FSR[0].firmwareVersion = " << (int)FSRdata[0].firmwareVersion << endl;
 			for (IL = 0; IL < NUM_FSRS; IL++)
