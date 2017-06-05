@@ -26,7 +26,7 @@ struct FSR_PCBA
 	unsigned char chksum2;
 };
 
-struct LEG
+struct LEG_PCB
 {
 	unsigned char firmwareVersion_;
 	unsigned short encoder[5];

@@ -29,9 +29,9 @@ int main()
 	unsigned short int sum1Tx, sum2Tx;
 	unsigned short int OL, IL, IIL;
 	unsigned short int posInData;
-	unsigned short int i, temp;
+	unsigned short int i, counter2;
 
-	struct LEG LEGdata[5];
+	struct LEG_PCB LEGdata[5];
 	struct FSR_PCBA FSRdata[5];
 	struct MAIN_PCBA MAINdata;
 
@@ -72,20 +72,39 @@ int main()
 		busDevice->transfer(motorCommand, receive, SPI_TRANSMISSION_SIZE);
 		usleep(100000);
 		posInData = 5;
+		counter2 = 0;
 
 		for (OL = 0; OL < 5; OL++)
 		{
+			cout << endl << "OL = " << (int)OL<< endl;
+
 			//FSR[OL].firmwareVersion = receive[(unsigned char)posInData];
 			cout << "receive[" << (int)(posInData) << "] = " << (int)receive[posInData] << endl;
-			FSRdata[0L].firmwareVersion = receive[posInData];
+
+			for (IL = 0; IL < 5; IL++)
+			{
+				cout << "FSR[" << (int)IL << "].firmwareVersion = " << (int)FSRdata[IL].firmwareVersion << endl;
+			}
+
+			cout << endl;
+
+			//FSRdata[0L].firmwareVersion = receive[posInData];
+			FSRdata[counter2].firmwareVersion = receive[posInData];
+			counter2++;
+
+			for (IL = 0; IL < 5; IL++)
+			{
+				cout << "FSR[" << (int)IL << "].firmwareVersion = " << (int)FSRdata[IL].firmwareVersion << endl;
+			}
+
 			//temp = (unsigned short int)receive[posInData];
 			//FSR[0L].firmwareVersion = (unsigned char)temp;
 			//cout << "temp = " << (int)(temp) << endl;
 
 			//FSR[OL].firmwareVersion = 67;
 			posInData++;
-
-			for (IL = 0; IL < 2*NUM_FSRS; IL++)
+			//cout << "OL = " << (int)OL<< " - 3) FSR[0].firmwareVersion = " << (int)FSRdata[0].firmwareVersion << endl;
+			for (IL = 0; IL < NUM_FSRS; IL++)
 			{
 				// These are 10 bit values sent with the upper byte first
 				FSRdata[OL].data[IL] = combineValues(receive[2*IL+posInData]&0b00000011, receive[2*IL+1+posInData]);
@@ -102,7 +121,7 @@ int main()
 			LEGdata[OL].firmwareVersion_ = receive[posInData];
 			posInData++;
 
-			for (IL = 0; IL < 2*NUM_ENCODERS; IL++)
+			for (IL = 0; IL < NUM_ENCODERS; IL++)
 			{
 				// These are 10 bit values sent with the upper byte first
 				LEGdata[OL].encoder[IL] = combineValues(receive[2*IL+posInData]&0b00000011, receive[2*IL+1+posInData]);
@@ -110,15 +129,13 @@ int main()
 
 
 			posInData = posInData+10;
-			cout << "1) FSR[0L].firmwareVersion = " << (int)(FSRdata[0L].firmwareVersion) << endl;
 
-			for (IL = 0; IL < 2*NUM_ENCODERS; IL++)
+
+			for (IL = 0; IL < NUM_ENCODERS; IL++)
 			{
 				// These are 10 bit values sent with the upper byte first
-				//LEG[OL].motCurrent[IL] = combineValues((receive[2*IL+posInData] & 0b00000011), receive[2*IL+1+posInData]);
-				LEGdata[OL].motCurrent[IL] = 88;
+				LEGdata[OL].motCurrent[IL] = combineValues((receive[2*IL+posInData] & 0b00000011), receive[2*IL+1+posInData]);
 			}
-			cout << "2) FSR[0L].firmwareVersion = " << (int)(FSRdata[0L].firmwareVersion) << endl;
 
 			posInData = posInData+10;
 			LEGdata[OL].error_ = receive[posInData];
@@ -128,7 +145,6 @@ int main()
 			LEGdata[OL].chksum2_ = receive[posInData];
 			posInData++;
 
-			cout << "5) FSR[0L].firmwareVersion = " << (int)(FSRdata[0L].firmwareVersion) << endl;
 		}
 
 		MAINdata.firmwareVersion = receive[posInData];
@@ -142,7 +158,7 @@ int main()
 		for (OL = 0; OL < 5; OL++)
 		{
 			cout << "--------- [FSR " << (int)(OL+1) << "]------------" << endl;
-			cout << "Firmware Version: " << (int)(FSRdata[OL].firmwareVersion) << endl;
+			cout << "Firmware Version: " << (int)FSRdata[OL].firmwareVersion << endl;
 			cout << "Error Flag: " << (int)FSRdata[OL].error << endl;
 			cout << "Checksum 1: " << (int)FSRdata[OL].chksum1 << endl;
 			cout << "Checksum 2: " << (int)FSRdata[OL].chksum2 << endl;
@@ -159,29 +175,29 @@ int main()
 				cout << endl;
 			}
 
-//			cout << "--------- [LEG " << (int)(OL+1) << "]------------" << endl;
-//			cout << "Firmware Version: " << (int)LEG[OL].firmwareVersion << endl;
-//			cout << "Error Flag: " << (int)LEG[OL].error << endl;
-//			cout << "Checksum 1: " << (int)LEG[OL].chksum1 << endl;
-//			cout << "Checksum 2: " << (int)LEG[OL].chksum2 << endl;
-//
-//			cout << "Encoder Data: ";
-//
-//			for (IL = 0; IL < NUM_ENCODERS; IL++)
-//			{
-//				cout << (int)LEG[OL].encoder[IL] << " ";
-//			}
-//
-//			cout << endl;
-//
-//			cout << "Motor Current Data: ";
-//
-//			for (IL = 0; IL < NUM_ENCODERS; IL++)
-//			{
-//				cout << (int)LEG[OL].motCurrent[IL] << " ";
-//			}
-//
-//			cout << endl;
+			cout << "--------- [LEG " << (int)(OL+1) << "]------------" << endl;
+			cout << "Firmware Version: " << (int)LEGdata[OL].firmwareVersion_ << endl;
+			cout << "Error Flag: " << (int)LEGdata[OL].error_ << endl;
+			cout << "Checksum 1: " << (int)LEGdata[OL].chksum1_ << endl;
+			cout << "Checksum 2: " << (int)LEGdata[OL].chksum2_ << endl;
+
+			cout << "Encoder Data: ";
+
+			for (IL = 0; IL < NUM_ENCODERS; IL++)
+			{
+				cout << (int)LEGdata[OL].encoder[IL] << " ";
+			}
+
+			cout << endl;
+
+			cout << "Motor Current Data: ";
+
+			for (IL = 0; IL < NUM_ENCODERS; IL++)
+			{
+				cout << (int)LEGdata[OL].motCurrent[IL] << " ";
+			}
+
+			cout << endl;
 		}
 
 		cout << "---------- [MAIN]------------" << endl;
