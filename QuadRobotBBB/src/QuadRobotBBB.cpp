@@ -15,21 +15,16 @@
 using namespace std;
 using namespace exploringBB;
 
-unsigned short int combineValues(unsigned char upper, unsigned char lower)
-{
-	return (((unsigned short int)(upper << 8)) | ((unsigned short int)(lower)));
-}
-
-
+void parseSPIfromMAIN(struct LEG_PCB *L, struct FSR_PCBA *F, struct MAIN_PCBA *M, unsigned char *r);
 
 int main()
 {
 	unsigned char motorCommand[SPI_TRANSMISSION_SIZE], receive[SPI_TRANSMISSION_SIZE], counter = 0;
 	unsigned char check1Tx, check2Tx;
 	unsigned short int sum1Tx, sum2Tx;
-	unsigned short int OL, IL, IIL;
+	unsigned char OL, IL, IIL, counter2;
 	unsigned short int posInData;
-	unsigned short int i, counter2;
+	unsigned short int i;
 
 	struct LEG_PCB LEGdata[5];
 	struct FSR_PCBA FSRdata[5];
@@ -97,10 +92,6 @@ int main()
 				cout << "FSR[" << (int)IL << "].firmwareVersion = " << (int)FSRdata[IL].firmwareVersion << endl;
 			}
 
-			//temp = (unsigned short int)receive[posInData];
-			//FSR[0L].firmwareVersion = (unsigned char)temp;
-			//cout << "temp = " << (int)(temp) << endl;
-
 			posInData++;
 			//cout << "OL = " << (int)OL<< " - 3) FSR[0].firmwareVersion = " << (int)FSRdata[0].firmwareVersion << endl;
 			for (IL = 0; IL < NUM_FSRS; IL++)
@@ -143,7 +134,6 @@ int main()
 			posInData++;
 			LEGdata[OL].chksum2_ = receive[posInData];
 			posInData++;
-
 		}
 
 		MAINdata.firmwareVersion = receive[posInData];
@@ -205,30 +195,27 @@ int main()
 
 		counter = 0;
 
-		for (OL = 0; OL < SPI_TRANSMISSION_SIZE; OL++)
+		for (i = 0; i < SPI_TRANSMISSION_SIZE; i++)
 		{
 			if (counter == 0)
 			{
-				cout << endl << (unsigned int)OL << ") ";
+				cout << endl << (unsigned int)i << ") ";
 				counter = 10;
 			}
 
-			cout << (unsigned int)receive[OL] << "  ";
+			cout << (unsigned int)receive[i] << "  ";
 			counter--;
 		}
 
 		cout << endl;
 
 
-		// NUM_LEG_PCBS*LEG_DATA_SIZE_RX <--- This does not include the error check
-
-
-		//cout << (int)counter << ") Response bytes are " << (int)receive[1] << "," << (int)receive[2] << endl;
-
-		// Use the 8-bits of the second value and the two LSBs of the first value
-		//int value = combineValues(receive[1]&0b00000011, receive[2]);
-
 		usleep(10000000);
 		//counter++;
 	}
+}
+
+void parseSPIfromMAIN(struct LEG_PCB *L, struct FSR_PCBA *F, struct MAIN_PCBA *M, unsigned char *r)
+{
+
 }
