@@ -17,11 +17,13 @@
 // LEG
 #define NUM_ENCODERS 5
 
+#define NUM_LEG_PCBS 5
+
 struct FSR_PCBA
 {
 	unsigned char firmwareVersion;
 	unsigned short data[24];
-	unsigned char error;
+	unsigned char dataError;
 	unsigned char chksum1;
 	unsigned char chksum2;
 };
@@ -31,15 +33,20 @@ struct LEG_PCB
 	unsigned char firmwareVersion_;
 	unsigned short encoder[5];
 	unsigned short motCurrent[5];
-	unsigned char error_;
-	unsigned char chksum1_;
-	unsigned char chksum2_;
+	unsigned char dataError;
+	unsigned char chksum1;
+	unsigned char chksum2;
 };
 
 struct MAIN_PCBA
 {
 	unsigned char firmwareVersion;
-	unsigned char error;
+	unsigned char dataError;
+};
+
+struct QUAD_ROBOT
+{
+	unsigned char dataError;
 };
 
 #endif /* TYPEDEFS_H_ */

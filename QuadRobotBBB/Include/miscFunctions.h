@@ -4,9 +4,15 @@
 // Fletcher-8 checksum functions
 unsigned short int sum1Helper(unsigned short int, unsigned char);
 unsigned short int sum2Helper(unsigned short int, unsigned short int);
+void sum1sum2(unsigned short int *, unsigned short int *, unsigned char *);
+
 unsigned char check1Helper(unsigned short int, unsigned short int);
 unsigned char check2Helper(unsigned short int, unsigned char);
 
 unsigned short int combineValues(unsigned char, unsigned char);
+
+void parseSPIfromMAIN(struct LEG_PCB *, struct FSR_PCBA *, struct MAIN_PCBA *, unsigned char *);
+void printSensorData(struct LEG_PCB *, struct FSR_PCBA *, struct MAIN_PCBA *);
+void printSPIstream(unsigned char *);
 
 #endif /* MISCFUNCTIONS_H_ */
