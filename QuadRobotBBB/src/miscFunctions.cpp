@@ -17,8 +17,8 @@ unsigned short int sum2Helper(unsigned short int sum1, unsigned short int sum2)
 
 void sum1sum2(unsigned short int *p_sum1, unsigned short int *p_sum2, unsigned char *p_data)
 {
-	p_sum1 = ((*p_sum1+*p_data) % 255);
-	p_sum2 = ((*p_sum1+*p_sum2) % 255);
+	*p_sum1 = ((*p_sum1+*p_data) % 255);
+	*p_sum2 = ((*p_sum1+*p_sum2) % 255);
 }
 
 unsigned char check1Helper(unsigned short int sum1Tx, unsigned short int sum2Tx)
@@ -36,11 +36,14 @@ unsigned short int combineValues(unsigned char upper, unsigned char lower)
 	return (((unsigned short int)(upper << 8)) | ((unsigned short int)(lower)));
 }
 
-void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, struct MAIN_PCBA *p_MAINdata, unsigned char *p_receive)
+void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, struct MAIN_PCBA *p_MAINdata, struct QUAD_ROBOT *p_QUADdata, unsigned char *p_receive)
 {
 	unsigned short int posInData = 5;
 	unsigned char OL, IL, counter2 = 0;
 	unsigned short int sum1, sum2;
+
+	// Initialize fields that may never be written
+	p_QUADdata->dataError = 0;
 
 	for (OL = 0; OL < NUM_LEG_PCBS; OL++)
 	{
@@ -120,9 +123,34 @@ void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, str
 		sum1sum2(&sum1, &sum2, &p_receive[posInData]);
 		posInData++;
 
+		// Because the two computed checksums were read in with the received data, the two running sums should be zero
+		// currently, the checksums do not act on the last two pieces of data in the packet (p_MAINdata->firmwareVersion and p_MAINdata->dataError)
 		if ((sum1 | sum2) > 0)
 		{
+			if (OL == 1)
+			{
+				p_QUADdata->dataError = (p_QUADdata->dataError)	| DATA_ERROR_RX_MAIN_MASK_LEG1;
+			}
 
+			else if (OL == 2)
+			{
+				p_QUADdata->dataError = (p_QUADdata->dataError)	| DATA_ERROR_RX_MAIN_MASK_LEG2;
+			}
+
+			else if (OL == 3)
+			{
+				p_QUADdata->dataError = (p_QUADdata->dataError)| DATA_ERROR_RX_MAIN_MASK_LEG3;
+			}
+
+			else if (OL == 4)
+			{
+				p_QUADdata->dataError = (p_QUADdata->dataError) | DATA_ERROR_RX_MAIN_MASK_LEG4;
+			}
+
+			else if (OL == 5)
+			{
+				p_QUADdata->dataError = (p_QUADdata->dataError) | DATA_ERROR_RX_MAIN_MASK_LEG5;
+			}
 		}
 	}
 
@@ -154,7 +182,7 @@ void printSPIstream(unsigned char *p_receive)
 	cout << endl;
 }
 
-void printSensorData(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, struct MAIN_PCBA *p_MAINdata)
+void printSensorData(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, struct MAIN_PCBA *p_MAINdata, struct QUAD_ROBOT *p_QUADdata)
 {
 	unsigned char OL, IL, IIL;
 
@@ -162,7 +190,7 @@ void printSensorData(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, stru
 	{
 		cout << "--------- [FSR " << (int)(OL+1) << "]------------" << endl;
 		cout << "Firmware Version: " << (int)p_FSRdata[OL].firmwareVersion << endl;
-		cout << "Error Flag: " << (int)p_FSRdata[OL].dataError << endl;
+		cout << "Error Code: " << (int)p_FSRdata[OL].dataError << endl;
 		cout << "Checksum 1: " << (int)p_FSRdata[OL].chksum1 << endl;
 		cout << "Checksum 2: " << (int)p_FSRdata[OL].chksum2 << endl;
 
@@ -180,7 +208,7 @@ void printSensorData(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, stru
 
 		cout << "--------- [LEG " << (int)(OL+1) << "]------------" << endl;
 		cout << "Firmware Version: " << (int)p_LEGdata[OL].firmwareVersion_ << endl;
-		cout << "Error Flag: " << (int)p_LEGdata[OL].dataError << endl;
+		cout << "Error Code: " << (int)p_LEGdata[OL].dataError << endl;
 		cout << "Checksum 1: " << (int)p_LEGdata[OL].chksum1 << endl;
 		cout << "Checksum 2: " << (int)p_LEGdata[OL].chksum2 << endl;
 
@@ -205,5 +233,8 @@ void printSensorData(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, stru
 
 	cout << "---------- [MAIN]------------" << endl;
 	cout << "Firmware Version: " << (int)p_MAINdata->firmwareVersion << endl;
-	cout << "Error Flag: " << (int)p_MAINdata->dataError << endl;
+	cout << "Error Code: " << (int)p_MAINdata->dataError << endl;
+
+	cout << "---------- [QUAD ROBOTT]------------" << endl;
+	cout << "Error Code: " << (int)p_QUADdata->dataError  << endl;
 }

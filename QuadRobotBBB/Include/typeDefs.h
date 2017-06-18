@@ -19,6 +19,17 @@
 
 #define NUM_LEG_PCBS 5
 
+// QUAD
+// These checksums are on the five blocks of data in the SPI transmission (one from each LEG PCB)
+#define DATA_ERROR_RX_MAIN_MASK_LEG1 0b1
+#define DATA_ERROR_RX_MAIN_MASK_LEG2 0b10
+#define DATA_ERROR_RX_MAIN_MASK_LEG3 0b100
+#define DATA_ERROR_RX_MAIN_MASK_LEG4 0b1000
+#define DATA_ERROR_RX_MAIN_MASK_LEG5 0b10000
+
+// This checksum is for the entire SPI transmission
+#define DATA_ERROR_RX_MAIN_MASK_ALL 0b100000
+
 struct FSR_PCBA
 {
 	unsigned char firmwareVersion;
@@ -46,6 +57,8 @@ struct MAIN_PCBA
 
 struct QUAD_ROBOT
 {
+	// Bit fields:
+	// 1 - checksum error on data from MAIN
 	unsigned char dataError;
 };
 

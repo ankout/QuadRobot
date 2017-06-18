@@ -65,8 +65,8 @@ int main()
 		busDevice->transfer(motorCommand, receive, SPI_TRANSMISSION_SIZE);
 		usleep(100000);
 
-		parseSPIfromMAIN(LEGdata, FSRdata, &MAINdata, receive);
-		printSensorData(LEGdata, FSRdata, &MAINdata);
+		parseSPIfromMAIN(LEGdata, FSRdata, &MAINdata, &QUADdata, receive);
+		printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata);
 		//printSPIstream(receive);
 
 		usleep(10000000);
