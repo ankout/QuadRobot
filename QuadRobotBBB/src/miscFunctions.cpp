@@ -47,7 +47,8 @@ void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, str
 
 	for (OL = 0; OL < NUM_LEG_PCBS; OL++)
 	{
-		sum1 = 0, sum2 = 0;
+		sum1 = 0;
+		sum2 = 0;
 
 		//cout << endl << "OL = " << (int)OL<< endl;
 		//FSR[OL].firmwareVersion = receive[(unsigned char)posInData];
@@ -154,10 +155,29 @@ void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, str
 		}
 	}
 
+	sum1 = 0;
+	sum2 = 0;
+
 	p_MAINdata->firmwareVersion = p_receive[posInData];
+	sum1sum2(&sum1, &sum2, &p_receive[posInData]);
 	posInData++;
+
 	p_MAINdata->dataError = p_receive[posInData];
+	sum1sum2(&sum1, &sum2, &p_receive[posInData]);
 	posInData++;
+
+	p_MAINdata->chksum1 = p_receive[posInData];
+	sum1sum2(&sum1, &sum2, &p_receive[posInData]);
+	posInData++;
+
+	p_MAINdata->chksum2 = p_receive[posInData];
+	sum1sum2(&sum1, &sum2, &p_receive[posInData]);
+	posInData++;
+
+	if ((sum1 | sum2) > 0)
+	{
+		p_QUADdata->dataError = (p_QUADdata->dataError)	| DATA_ERROR_RX_MAIN_MASK_MAIN;
+	}
 }
 
 void printSPIstream(unsigned char *p_receive)
@@ -234,7 +254,9 @@ void printSensorData(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, stru
 	cout << "---------- [MAIN]------------" << endl;
 	cout << "Firmware Version: " << (int)p_MAINdata->firmwareVersion << endl;
 	cout << "Error Code: " << (int)p_MAINdata->dataError << endl;
+	cout << "Checksum 1: " << (int)p_MAINdata->chksum1 << endl;
+	cout << "Checksum 2: " << (int)p_MAINdata->chksum2 << endl;
 
-	cout << "---------- [QUAD ROBOTT]------------" << endl;
+	cout << "---------- [QUAD ROBOT]------------" << endl;
 	cout << "Error Code: " << (int)p_QUADdata->dataError  << endl;
 }

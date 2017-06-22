@@ -6,10 +6,11 @@
 #define SPI_PREAMBLE_BYTES 4 // Number of 0xFF bytes to send before message
 #define SPI_CHECKSUM_SIZE 2
 
-#define SPI_TRANSMISSION_SIZE 387 	// This is only this long to accommodate the length of received data.
+#define SPI_TRANSMISSION_SIZE 389 	// This is only this long to accommodate the length of received data.
 							      	// 5 LEG PCBs, 76 bytes of data each: 380
 									// Software version: 1
 									// Error code: 1
+									// Checksum bytes: 2 (these only apply to the software version and error code for MAIN)
 									// Extra length needed to capture last byte: 1
 // FSR
 #define NUM_FSRS 24
@@ -27,8 +28,8 @@
 #define DATA_ERROR_RX_MAIN_MASK_LEG4 0b1000
 #define DATA_ERROR_RX_MAIN_MASK_LEG5 0b10000
 
-// This checksum is for the entire SPI transmission
-#define DATA_ERROR_RX_MAIN_MASK_ALL 0b100000
+// This checksum is for data just associated with the MAIN board
+#define DATA_ERROR_RX_MAIN_MASK_MAIN 0b100000
 
 struct FSR_PCBA
 {
@@ -53,6 +54,8 @@ struct MAIN_PCBA
 {
 	unsigned char firmwareVersion;
 	unsigned char dataError;
+	unsigned char chksum1;
+	unsigned char chksum2;
 };
 
 struct QUAD_ROBOT
