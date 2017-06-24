@@ -5,6 +5,71 @@
 
 using namespace std;
 
+void getMotorCommands(unsigned char *p_motorCommand)
+{
+	unsigned char check1Tx, check2Tx;
+	unsigned short int i;
+	unsigned short int sum1Tx, sum2Tx;
+
+	for (i = 0; i < SPI_PREAMBLE_BYTES; i++)
+	{
+		p_motorCommand[i] = 0xFF;
+	}
+
+	sum1Tx = 0;
+	sum2Tx = 0;
+
+	for (i = SPI_PREAMBLE_BYTES; i < (SPI_PREAMBLE_BYTES+SPI_TX_DATA_SIZE); i++)
+	{
+		p_motorCommand[i] = i-SPI_PREAMBLE_BYTES;
+
+		if (i == 4)
+		{
+			p_motorCommand[i] = 100;
+		}
+
+		else if (i == 5)
+		{
+			p_motorCommand[i] = 200;
+		}
+
+		if (i == 6)
+		{
+			p_motorCommand[i] = 100;
+		}
+
+		else if (i == 7)
+		{
+			p_motorCommand[i] = 200;
+		}
+
+		if (i == 8)
+		{
+			p_motorCommand[i] = 100;
+		}
+
+		else if (i == 9)
+		{
+			p_motorCommand[i] = 0b10101;
+		}
+
+		sum1Tx = sum1Helper(sum1Tx, p_motorCommand[i]);
+		sum2Tx = sum2Helper(sum1Tx, sum1Tx);
+	}
+
+	check1Tx = check1Helper(sum1Tx, sum2Tx);
+	check2Tx = check2Helper(sum1Tx, check1Tx);
+
+	p_motorCommand[SPI_PREAMBLE_BYTES+SPI_TX_DATA_SIZE] = check1Tx;
+	p_motorCommand[SPI_PREAMBLE_BYTES+SPI_TX_DATA_SIZE+1] = check2Tx;
+
+	// Fill the rest with 0s...Tx and Rx data have to be the same length for SPI
+	for (i = (SPI_PREAMBLE_BYTES+SPI_TX_DATA_SIZE+SPI_CHECKSUM_SIZE); i < SPI_TRANSMISSION_SIZE; i++)
+	{
+		p_motorCommand[i] = 0x0;
+	}
+}
+
 unsigned short int sum1Helper(unsigned short int sum1, unsigned char data)
 {
 	return ((sum1+data) % 255);
@@ -98,7 +163,8 @@ void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, str
 		for (IL = 0; IL < NUM_ENCODERS; IL++)
 		{
 			// These are 10 bit values sent with the upper byte first
-			p_LEGdata[OL].encoder[IL] = combineValues(p_receive[2*IL+posInData]&0b00000011, p_receive[2*IL+1+posInData]);
+			//p_LEGdata[OL].encoder[IL] = combineValues(p_receive[2*IL+posInData]&0b00000011, p_receive[2*IL+1+posInData]);
+			p_LEGdata[OL].encoder[IL] = combineValues(p_receive[2*IL+1+posInData], p_receive[2*IL+1+posInData]);
 			sum1sum2(&sum1, &sum2, &p_receive[2*IL+posInData]);
 			sum1sum2(&sum1, &sum2, &p_receive[2*IL+1+posInData]);
 		}
@@ -155,7 +221,7 @@ void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, str
 		}
 	}
 
-	sum1 = 0;
+	sum1  = 0;
 	sum2 = 0;
 
 	p_MAINdata->firmwareVersion = p_receive[posInData];
@@ -202,53 +268,56 @@ void printSPIstream(unsigned char *p_receive)
 	cout << endl;
 }
 
-void printSensorData(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, struct MAIN_PCBA *p_MAINdata, struct QUAD_ROBOT *p_QUADdata)
+void printSensorData(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, struct MAIN_PCBA *p_MAINdata, struct QUAD_ROBOT *p_QUADdata, unsigned char whichToPrint)
 {
 	unsigned char OL, IL, IIL;
 
 	for (OL = 0; OL < 5; OL++)
 	{
-		cout << "--------- [FSR " << (int)(OL+1) << "]------------" << endl;
-		cout << "Firmware Version: " << (int)p_FSRdata[OL].firmwareVersion << endl;
-		cout << "Error Code: " << (int)p_FSRdata[OL].dataError << endl;
-		cout << "Checksum 1: " << (int)p_FSRdata[OL].chksum1 << endl;
-		cout << "Checksum 2: " << (int)p_FSRdata[OL].chksum2 << endl;
-
-		for (IL = 0; IL < 2; IL++)
+		if ((whichToPrint >> OL) & 0b1)
 		{
-			cout << "FSR Data "<< (int)(IL*12+1) << "-" << (int)((IL+1)*12) << ": ";
+			cout << "--------- [FSR " << (int)(OL+1) << "]------------" << endl;
+			cout << "Firmware Version: " << (int)p_FSRdata[OL].firmwareVersion << endl;
+			cout << "Error Code: " << (int)p_FSRdata[OL].dataError << endl;
+			cout << "Checksum 1: " << (int)p_FSRdata[OL].chksum1 << endl;
+			cout << "Checksum 2: " << (int)p_FSRdata[OL].chksum2 << endl;
 
-			for (IIL = 0; IIL < 12; IIL++)
+			for (IL = 0; IL < 2; IL++)
 			{
-				cout << (int)p_FSRdata[OL].data[IL*12+IIL] << " ";
+				cout << "FSR Data "<< (int)(IL*12+1) << "-" << (int)((IL+1)*12) << ": ";
+
+				for (IIL = 0; IIL < 12; IIL++)
+				{
+					cout << (int)p_FSRdata[OL].data[IL*12+IIL] << " ";
+				}
+
+				cout << endl;
+			}
+
+			cout << "--------- [LEG " << (int)(OL+1) << "]------------" << endl;
+			cout << "Firmware Version: " << (int)p_LEGdata[OL].firmwareVersion_ << endl;
+			cout << "Error Code: " << (int)p_LEGdata[OL].dataError << endl;
+			cout << "Checksum 1: " << (int)p_LEGdata[OL].chksum1 << endl;
+			cout << "Checksum 2: " << (int)p_LEGdata[OL].chksum2 << endl;
+
+			cout << "Encoder Data: ";
+
+			for (IL = 0; IL < NUM_ENCODERS; IL++)
+			{
+				cout << (int)p_LEGdata[OL].encoder[IL] << " ";
+			}
+
+			cout << endl;
+
+			cout << "Motor Current Data: ";
+
+			for (IL = 0; IL < NUM_ENCODERS; IL++)
+			{
+				cout << (int)p_LEGdata[OL].motCurrent[IL] << " ";
 			}
 
 			cout << endl;
 		}
-
-		cout << "--------- [LEG " << (int)(OL+1) << "]------------" << endl;
-		cout << "Firmware Version: " << (int)p_LEGdata[OL].firmwareVersion_ << endl;
-		cout << "Error Code: " << (int)p_LEGdata[OL].dataError << endl;
-		cout << "Checksum 1: " << (int)p_LEGdata[OL].chksum1 << endl;
-		cout << "Checksum 2: " << (int)p_LEGdata[OL].chksum2 << endl;
-
-		cout << "Encoder Data: ";
-
-		for (IL = 0; IL < NUM_ENCODERS; IL++)
-		{
-			cout << (int)p_LEGdata[OL].encoder[IL] << " ";
-		}
-
-		cout << endl;
-
-		cout << "Motor Current Data: ";
-
-		for (IL = 0; IL < NUM_ENCODERS; IL++)
-		{
-			cout << (int)p_LEGdata[OL].motCurrent[IL] << " ";
-		}
-
-		cout << endl;
 	}
 
 	cout << "---------- [MAIN]------------" << endl;

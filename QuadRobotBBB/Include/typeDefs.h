@@ -7,6 +7,7 @@
 #define SPI_CHECKSUM_SIZE 2
 
 #define SPI_TRANSMISSION_SIZE 389 	// This is only this long to accommodate the length of received data.
+									// Preamble bytes: 4
 							      	// 5 LEG PCBs, 76 bytes of data each: 380
 									// Software version: 1
 									// Error code: 1
