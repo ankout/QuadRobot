@@ -16,7 +16,7 @@ void parseSPIfromMAIN(struct LEG_PCB *, struct FSR_PCBA *, struct MAIN_PCBA *, s
 void printSensorData(struct LEG_PCB *, struct FSR_PCBA *, struct MAIN_PCBA *, struct QUAD_ROBOT *, unsigned char);
 void printSPIstream(unsigned char *);
 
-//
+
 void getMotorCommands(unsigned char *);
 
 #endif /* MISCFUNCTIONS_H_ */

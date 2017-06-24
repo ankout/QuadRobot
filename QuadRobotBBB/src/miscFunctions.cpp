@@ -5,6 +5,7 @@
 
 using namespace std;
 
+
 void getMotorCommands(unsigned char *p_motorCommand)
 {
 	unsigned char check1Tx, check2Tx;

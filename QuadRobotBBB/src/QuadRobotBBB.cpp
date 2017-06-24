@@ -8,7 +8,6 @@
 using namespace std;
 using namespace exploringBB;
 
-
 int main()
 {
 	unsigned char motorCommand[SPI_TRANSMISSION_SIZE], receive[SPI_TRANSMISSION_SIZE];
