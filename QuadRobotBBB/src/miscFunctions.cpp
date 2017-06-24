@@ -115,7 +115,6 @@ void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, str
 		sum1 = 0;
 		sum2 = 0;
 
-		//cout << endl << "OL = " << (int)OL<< endl;
 		//FSR[OL].firmwareVersion = receive[(unsigned char)posInData];
 		//cout << "receive[" << (int)(posInData) << "] = " << (int)p_receive[posInData] << endl;
 		//for (IL = 0; IL < 5; IL++)
