@@ -26,32 +26,32 @@ void getMotorCommands(unsigned char *p_motorCommand)
 
 		if (i == 4)
 		{
-			p_motorCommand[i] = 100;
+			p_motorCommand[i] = 30;
 		}
 
 		else if (i == 5)
 		{
-			p_motorCommand[i] = 200;
+			p_motorCommand[i] = 60;
 		}
 
 		if (i == 6)
 		{
-			p_motorCommand[i] = 100;
+			p_motorCommand[i] = 30;
 		}
 
 		else if (i == 7)
 		{
-			p_motorCommand[i] = 200;
+			p_motorCommand[i] = 60;
 		}
 
 		if (i == 8)
 		{
-			p_motorCommand[i] = 100;
+			p_motorCommand[i] = 30;
 		}
 
 		else if (i == 9)
 		{
-			p_motorCommand[i] = 0b10101;
+			p_motorCommand[i] = 0b10111;
 		}
 
 		sum1Tx = sum1Helper(sum1Tx, p_motorCommand[i]);
@@ -140,7 +140,7 @@ void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, str
 		for (IL = 0; IL < NUM_FSRS; IL++)
 		{
 			// These are 10 bit values sent with the upper byte first
-			p_FSRdata[OL].data[IL] = combineValues(p_receive[2*IL+posInData]&0b00000011, p_receive[2*IL+1+posInData]);
+			p_FSRdata[OL].data[IL] = combineValues(p_receive[2*IL+1+posInData], p_receive[2*IL+posInData]);
 			sum1sum2(&sum1, &sum2, &p_receive[2*IL+posInData]);
 			sum1sum2(&sum1, &sum2, &p_receive[2*IL+1+posInData]);
 		}
@@ -163,8 +163,7 @@ void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, str
 		for (IL = 0; IL < NUM_ENCODERS; IL++)
 		{
 			// These are 10 bit values sent with the upper byte first
-			//p_LEGdata[OL].encoder[IL] = combineValues(p_receive[2*IL+posInData]&0b00000011, p_receive[2*IL+1+posInData]);
-			p_LEGdata[OL].encoder[IL] = combineValues(p_receive[2*IL+1+posInData], p_receive[2*IL+1+posInData]);
+			p_LEGdata[OL].encoder[IL] = combineValues(p_receive[2*IL+1+posInData], p_receive[2*IL+posInData]);
 			sum1sum2(&sum1, &sum2, &p_receive[2*IL+posInData]);
 			sum1sum2(&sum1, &sum2, &p_receive[2*IL+1+posInData]);
 		}
@@ -174,7 +173,7 @@ void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, str
 		for (IL = 0; IL < NUM_ENCODERS; IL++)
 		{
 			// These are 10 bit values sent with the upper byte first
-			p_LEGdata[OL].motCurrent[IL] = combineValues((p_receive[2*IL+posInData] & 0b00000011), p_receive[2*IL+1+posInData]);
+			p_LEGdata[OL].motCurrent[IL] = combineValues(p_receive[2*IL+1+posInData], p_receive[2*IL+posInData]);
 			sum1sum2(&sum1, &sum2, &p_receive[2*IL+posInData]);
 			sum1sum2(&sum1, &sum2, &p_receive[2*IL+1+posInData]);
 		}
@@ -277,10 +276,6 @@ void printSensorData(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, stru
 		if ((whichToPrint >> OL) & 0b1)
 		{
 			cout << "--------- [FSR " << (int)(OL+1) << "]------------" << endl;
-			cout << "Firmware Version: " << (int)p_FSRdata[OL].firmwareVersion << endl;
-			cout << "Error Code: " << (int)p_FSRdata[OL].dataError << endl;
-			cout << "Checksum 1: " << (int)p_FSRdata[OL].chksum1 << endl;
-			cout << "Checksum 2: " << (int)p_FSRdata[OL].chksum2 << endl;
 
 			for (IL = 0; IL < 2; IL++)
 			{
@@ -294,11 +289,12 @@ void printSensorData(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, stru
 				cout << endl;
 			}
 
+			cout << "Firmware Version: " << (int)p_FSRdata[OL].firmwareVersion << endl;
+			cout << "Error Code: " << (int)p_FSRdata[OL].dataError << endl;
+			cout << "Checksum 1: " << (int)p_FSRdata[OL].chksum1 << endl;
+			cout << "Checksum 2: " << (int)p_FSRdata[OL].chksum2 << endl;
+
 			cout << "--------- [LEG " << (int)(OL+1) << "]------------" << endl;
-			cout << "Firmware Version: " << (int)p_LEGdata[OL].firmwareVersion_ << endl;
-			cout << "Error Code: " << (int)p_LEGdata[OL].dataError << endl;
-			cout << "Checksum 1: " << (int)p_LEGdata[OL].chksum1 << endl;
-			cout << "Checksum 2: " << (int)p_LEGdata[OL].chksum2 << endl;
 
 			cout << "Encoder Data: ";
 
@@ -309,14 +305,17 @@ void printSensorData(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, stru
 
 			cout << endl;
 
-			cout << "Motor Current Data: ";
+			cout << "Motor Current Data: " << endl;
 
 			for (IL = 0; IL < NUM_ENCODERS; IL++)
 			{
 				cout << (int)p_LEGdata[OL].motCurrent[IL] << " ";
 			}
 
-			cout << endl;
+			cout << "Firmware Version: " << (int)p_LEGdata[OL].firmwareVersion_ << endl;
+			cout << "Error Code: " << (int)p_LEGdata[OL].dataError << endl;
+			cout << "Checksum 1: " << (int)p_LEGdata[OL].chksum1 << endl;
+			cout << "Checksum 2: " << (int)p_LEGdata[OL].chksum2 << endl;
 		}
 	}
 

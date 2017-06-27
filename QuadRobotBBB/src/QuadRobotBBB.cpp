@@ -4,6 +4,7 @@
 #include "typeDefs.h"
 #include "miscFunctions.h"
 #include <unistd.h>
+#include "GPIO.h"
 
 using namespace std;
 using namespace exploringBB;
@@ -25,21 +26,23 @@ int main()
 
 	getMotorCommands(motorCommand);
 
-	//GPIO outGPIO(49);
-	//outGPIO.setDirection(OUTPUT);
+	GPIO outGPIO(61);
+	outGPIO.setDirection(OUTPUT);
 
 	while (1)
 	{
-		cout << endl << "        -----[" << (unsigned long int)counter << "]-----" << endl;
-		busDevice->transfer(motorCommand, receive, SPI_TRANSMISSION_SIZE);
-		usleep(100000);
+		//cout << endl << "        -----[" << (unsigned long int)counter << "]-----" << endl;
+		//busDevice->transfer(motorCommand, receive, SPI_TRANSMISSION_SIZE);
 
-		parseSPIfromMAIN(LEGdata, FSRdata, &MAINdata, &QUADdata, receive);
-		printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b00001);
-		//printSPIstream(receive);
+		//parseSPIfromMAIN(LEGdata, FSRdata, &MAINdata, &QUADdata, receive);
+		//printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b00001);
 
-		usleep(3000000);
-		counter++;
+		//usleep(500000);
+		//counter++;
+		outGPIO.setValue(HIGH);
+		 		usleep(50);
+		 		outGPIO.setValue(LOW);
+		 		usleep(50);
 	}
 }
 
