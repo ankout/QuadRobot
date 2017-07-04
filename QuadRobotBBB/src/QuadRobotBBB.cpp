@@ -21,28 +21,33 @@ int main()
 
 
 	SPIDevice *busDevice = new SPIDevice(1,0); //Using second SPI bus (both loaded)
-	busDevice->setSpeed(400000);      // Have access to SPI Device object
+	busDevice->setSpeed(800000);      // Have access to SPI Device object
 	busDevice->setMode(SPIDevice::MODE0);
 
 	getMotorCommands(motorCommand);
 
-	GPIO outGPIO(61);
-	outGPIO.setDirection(OUTPUT);
+	GPIO GPIO_1(61);
+	GPIO_1.setDirection(OUTPUT);
+
+	GPIO GPIO_2(22);
+	GPIO_2.setDirection(OUTPUT);
 
 	while (1)
 	{
 		//cout << endl << "        -----[" << (unsigned long int)counter << "]-----" << endl;
-		//busDevice->transfer(motorCommand, receive, SPI_TRANSMISSION_SIZE);
-
-		//parseSPIfromMAIN(LEGdata, FSRdata, &MAINdata, &QUADdata, receive);
+		GPIO_1.setValue(HIGH);
+		busDevice->transfer(motorCommand, receive, SPI_TRANSMISSION_SIZE);
+		GPIO_1.setValue(LOW);
+		GPIO_2.setValue(HIGH);
+		parseSPIfromMAIN(LEGdata, FSRdata, &MAINdata, &QUADdata, receive);
+		GPIO_2.setValue(LOW);
 		//printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b00001);
 
-		//usleep(500000);
-		//counter++;
-		outGPIO.setValue(HIGH);
-		 		usleep(50);
-		 		outGPIO.setValue(LOW);
-		 		usleep(50);
+		//GPIO_1.toggleOutput();
+
+		counter++;
+		//GPIO_1.toggleOutput();
+		//usleep(50);
 	}
 }
 

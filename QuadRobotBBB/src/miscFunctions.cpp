@@ -2,6 +2,8 @@
 #include <sstream>
 #include "miscFunctions.h"
 #include "typeDefs.h"
+#include <time.h>
+#include <stdio.h>
 
 using namespace std;
 
@@ -12,6 +14,9 @@ void getMotorCommands(unsigned char *p_motorCommand)
 	unsigned short int i;
 	unsigned short int sum1Tx, sum2Tx;
 
+	unsigned char high = 0, low = 0;
+
+	// The first four bytes are preamble bytes
 	for (i = 0; i < SPI_PREAMBLE_BYTES; i++)
 	{
 		p_motorCommand[i] = 0xFF;
@@ -26,32 +31,64 @@ void getMotorCommands(unsigned char *p_motorCommand)
 
 		if (i == 4)
 		{
-			p_motorCommand[i] = 30;
+			p_motorCommand[i] = high;
 		}
 
 		else if (i == 5)
 		{
-			p_motorCommand[i] = 60;
+			p_motorCommand[i] = low;
 		}
 
-		if (i == 6)
+		else if (i == 6)
 		{
-			p_motorCommand[i] = 30;
+			p_motorCommand[i] = high;
 		}
 
 		else if (i == 7)
 		{
-			p_motorCommand[i] = 60;
+			p_motorCommand[i] = low;
 		}
 
-		if (i == 8)
+		else if (i == 8)
 		{
-			p_motorCommand[i] = 30;
+			p_motorCommand[i] = high;
 		}
 
 		else if (i == 9)
 		{
 			p_motorCommand[i] = 0b10111;
+		}
+
+		///////
+
+		else if (i == 10)
+		{
+			p_motorCommand[i] = low;
+		}
+
+		else if (i == 11)
+		{
+			p_motorCommand[i] = high;
+		}
+
+		else if (i == 12)
+		{
+			p_motorCommand[i] = low;
+		}
+
+		else if (i == 13)
+		{
+			p_motorCommand[i] = high;
+		}
+
+		else if (i == 14)
+		{
+			p_motorCommand[i] = low;
+		}
+
+		else if (i == 15)
+		{
+			p_motorCommand[i] = 0b10101;
 		}
 
 		sum1Tx = sum1Helper(sum1Tx, p_motorCommand[i]);
@@ -107,6 +144,7 @@ void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, str
 	unsigned short int posInData = 5;
 	unsigned char OL, IL, counter2 = 0;
 	unsigned short int sum1, sum2;
+	time_t clk = time(NULL);
 
 	// Initialize fields that may never be written
 	p_QUADdata->dataError = 0;
@@ -243,6 +281,30 @@ void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, str
 	{
 		p_QUADdata->dataError = (p_QUADdata->dataError)	| DATA_ERROR_RX_MAIN_MASK_MAIN;
 	}
+
+	// Write out errors to file
+	for (OL = 0; OL < NUM_LEG_PCBS; OL++)
+	{
+		if (p_FSRdata[OL].dataError != 0)
+		{
+			printf("%s\tError code %u on FSR %u\n", ctime(&clk), p_FSRdata[OL].dataError, OL);
+		}
+
+		if (p_LEGdata[OL].dataError != 0)
+		{
+			printf("%s\tError code %u on LEG %u\n", ctime(&clk), p_LEGdata[OL].dataError, OL);
+		}
+	}
+
+	if (p_MAINdata->dataError != 0)
+	{
+		printf("%s\tError code %u on MAIN\n", ctime(&clk), p_MAINdata->dataError);
+	}
+
+	if (p_QUADdata->dataError != 0)
+	{
+		printf("%s\tError code %u on QUAD\n", ctime(&clk), p_QUADdata->dataError);
+	}
 }
 
 void printSPIstream(unsigned char *p_receive)
@@ -290,9 +352,9 @@ void printSensorData(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, stru
 			}
 
 			cout << "Firmware Version: " << (int)p_FSRdata[OL].firmwareVersion << endl;
-			cout << "Error Code: " << (int)p_FSRdata[OL].dataError << endl;
 			cout << "Checksum 1: " << (int)p_FSRdata[OL].chksum1 << endl;
 			cout << "Checksum 2: " << (int)p_FSRdata[OL].chksum2 << endl;
+			cout << "Error Code: " << (int)p_FSRdata[OL].dataError << endl;
 
 			cout << "--------- [LEG " << (int)(OL+1) << "]------------" << endl;
 
@@ -312,18 +374,20 @@ void printSensorData(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, stru
 				cout << (int)p_LEGdata[OL].motCurrent[IL] << " ";
 			}
 
+			cout << endl;
+
 			cout << "Firmware Version: " << (int)p_LEGdata[OL].firmwareVersion_ << endl;
-			cout << "Error Code: " << (int)p_LEGdata[OL].dataError << endl;
 			cout << "Checksum 1: " << (int)p_LEGdata[OL].chksum1 << endl;
 			cout << "Checksum 2: " << (int)p_LEGdata[OL].chksum2 << endl;
+			cout << "Error Code: " << (int)p_LEGdata[OL].dataError << endl;
 		}
 	}
 
 	cout << "---------- [MAIN]------------" << endl;
 	cout << "Firmware Version: " << (int)p_MAINdata->firmwareVersion << endl;
-	cout << "Error Code: " << (int)p_MAINdata->dataError << endl;
 	cout << "Checksum 1: " << (int)p_MAINdata->chksum1 << endl;
 	cout << "Checksum 2: " << (int)p_MAINdata->chksum2 << endl;
+	cout << "Error Code: " << (int)p_MAINdata->dataError << endl;
 
 	cout << "---------- [QUAD ROBOT]------------" << endl;
 	cout << "Error Code: " << (int)p_QUADdata->dataError  << endl;
