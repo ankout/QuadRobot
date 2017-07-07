@@ -144,6 +144,9 @@ void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, str
 	unsigned short int posInData = 5;
 	unsigned char OL, IL, counter2 = 0;
 	unsigned short int sum1, sum2;
+	unsigned char errorCodeIdx;
+	static unsigned short int numCyclesSinceLastError[2*NUM_LEG_PCBS+2];
+
 	time_t clk = time(NULL);
 
 	// Initialize fields that may never be written
@@ -243,7 +246,7 @@ void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, str
 
 			else if (OL == 3)
 			{
-				p_QUADdata->dataError = (p_QUADdata->dataError)| DATA_ERROR_RX_MAIN_MASK_LEG3;
+				p_QUADdata->dataError = (p_QUADdata->dataError) | DATA_ERROR_RX_MAIN_MASK_LEG3;
 			}
 
 			else if (OL == 4)
@@ -282,28 +285,63 @@ void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, str
 		p_QUADdata->dataError = (p_QUADdata->dataError)	| DATA_ERROR_RX_MAIN_MASK_MAIN;
 	}
 
-	// Write out errors to file
+	errorCodeIdx = 0;
+	p_LEGdata[3].dataError = 33;
+
+	// Write out errors to file if enough cycles have elapsed
 	for (OL = 0; OL < NUM_LEG_PCBS; OL++)
 	{
+		errorCodeIdx++;
+
 		if (p_FSRdata[OL].dataError != 0)
 		{
-			printf("%s\tError code %u on FSR %u\n", ctime(&clk), p_FSRdata[OL].dataError, OL);
+			if (numCyclesSinceLastError[errorCodeIdx] == 0)
+			{
+				printf("%s\tError code %u on FSR %u\n", ctime(&clk), p_FSRdata[OL].dataError, OL);
+				numCyclesSinceLastError[errorCodeIdx] = NUM_CYCLES_BETWEEN_ERROR_LOGS;
+			}
 		}
+
+		errorCodeIdx++;
 
 		if (p_LEGdata[OL].dataError != 0)
 		{
-			printf("%s\tError code %u on LEG %u\n", ctime(&clk), p_LEGdata[OL].dataError, OL);
+			if (numCyclesSinceLastError[errorCodeIdx] == 0)
+			{
+				printf("%s\tError code %u on LEG %u\n", ctime(&clk), p_LEGdata[OL].dataError, OL);
+				numCyclesSinceLastError[errorCodeIdx] = NUM_CYCLES_BETWEEN_ERROR_LOGS;
+			}
 		}
 	}
 
+	errorCodeIdx++;
+
 	if (p_MAINdata->dataError != 0)
 	{
-		printf("%s\tError code %u on MAIN\n", ctime(&clk), p_MAINdata->dataError);
+		if (numCyclesSinceLastError[errorCodeIdx] == 0)
+		{
+			printf("%s\tError code %u on MAIN\n", ctime(&clk), p_MAINdata->dataError);
+			numCyclesSinceLastError[errorCodeIdx] = NUM_CYCLES_BETWEEN_ERROR_LOGS;
+		}
 	}
+
+	errorCodeIdx++;
 
 	if (p_QUADdata->dataError != 0)
 	{
-		printf("%s\tError code %u on QUAD\n", ctime(&clk), p_QUADdata->dataError);
+		if (numCyclesSinceLastError[errorCodeIdx] == 0)
+		{
+			printf("%s\tError code %u on QUAD\n", ctime(&clk), p_QUADdata->dataError);
+			numCyclesSinceLastError[errorCodeIdx] = NUM_CYCLES_BETWEEN_ERROR_LOGS;
+		}
+	}
+
+	for (OL = 0; OL < (2*NUM_LEG_PCBS+2); OL++)
+	{
+		if (numCyclesSinceLastError[OL] > 0)
+		{
+			numCyclesSinceLastError[OL]--;
+		}
 	}
 }
 
@@ -312,7 +350,7 @@ void printSPIstream(unsigned char *p_receive)
 	unsigned char counter = 0;
 	unsigned short int i;
 
-	cout << endl << "Preamble bytes are: " << (int)p_receive[1] << " " << (int)p_receive[2] << " " << (int)p_receive[3] << " " << (int)p_receive[4] << endl;
+	cout << endl << "Preamble bytes: " << (int)p_receive[1] << " " << (int)p_receive[2] << " " << (int)p_receive[3] << " " << (int)p_receive[4] << endl;
 
 	for (i = 0; i < SPI_TRANSMISSION_SIZE; i++)
 	{
