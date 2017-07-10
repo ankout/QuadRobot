@@ -261,7 +261,7 @@ void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, str
 		}
 	}
 
-	sum1  = 0;
+	sum1 = 0;
 	sum2 = 0;
 
 	p_MAINdata->firmwareVersion = p_receive[posInData];
@@ -286,7 +286,6 @@ void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, str
 	}
 
 	errorCodeIdx = 0;
-	p_LEGdata[3].dataError = 33;
 
 	// Write out errors to file if enough cycles have elapsed
 	for (OL = 0; OL < NUM_LEG_PCBS; OL++)
@@ -321,6 +320,7 @@ void parseSPIfromMAIN(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, str
 		if (numCyclesSinceLastError[errorCodeIdx] == 0)
 		{
 			printf("%s\tError code %u on MAIN\n", ctime(&clk), p_MAINdata->dataError);
+			//printSensorData(p_LEGdata, p_FSRdata, p_MAINdata, p_QUADdata, 0b10000);
 			numCyclesSinceLastError[errorCodeIdx] = NUM_CYCLES_BETWEEN_ERROR_LOGS;
 		}
 	}

@@ -13,6 +13,7 @@ int main()
 {
 	unsigned char motorCommand[SPI_TRANSMISSION_SIZE], receive[SPI_TRANSMISSION_SIZE];
 	unsigned long int counter = 0;
+	unsigned char flipFlop = 0;
 
 	struct LEG_PCB LEGdata[NUM_LEG_PCBS];
 	struct FSR_PCBA FSRdata[NUM_LEG_PCBS];
@@ -21,7 +22,7 @@ int main()
 
 
 	SPIDevice *busDevice = new SPIDevice(1,0); //Using second SPI bus (both loaded)
-	busDevice->setSpeed(800000);      // Have access to SPI Device object
+	busDevice->setSpeed(800000);      // If checksums on MAIN or QUAD are bad, try lowering this number
 	busDevice->setMode(SPIDevice::MODE0);
 
 	getMotorCommands(motorCommand);
@@ -42,12 +43,27 @@ int main()
 		parseSPIfromMAIN(LEGdata, FSRdata, &MAINdata, &QUADdata, receive);
 		GPIO_2.setValue(LOW);
 		//printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b00001);
-
+		//usleep(50000);
 		//GPIO_1.toggleOutput();
+
+		/*if (MAINdata.dataError > 0)
+		{
+			if (flipFlop == 0)
+			{
+				GPIO_1.setValue(HIGH);
+				flipFlop = 1;
+			}
+
+			else
+			{
+				GPIO_1.setValue(LOW);
+				flipFlop = 0;
+			}
+		}*/
 
 		counter++;
 		//GPIO_1.toggleOutput();
-		//usleep(50);
+
 	}
 }
 
