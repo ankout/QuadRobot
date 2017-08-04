@@ -17,6 +17,6 @@ void printSensorData(struct LEG_PCB *, struct FSR_PCBA *, struct MAIN_PCBA *, st
 void printSPIstream(unsigned char *);
 
 
-void getMotorCommands(unsigned char *);
+
 
 #endif /* MISCFUNCTIONS_H_ */

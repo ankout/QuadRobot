@@ -3,6 +3,7 @@
 #include "bus/SPIDevice.h"
 #include "typeDefs.h"
 #include "miscFunctions.h"
+#include "robotMotion.h"
 #include <unistd.h>
 #include "GPIO.h"
 
@@ -21,7 +22,6 @@ int main()
 	struct MAIN_PCBA MAINdata;
 	struct QUAD_ROBOT QUADdata;
 
-
 	SPIDevice *busDevice = new SPIDevice(1,0); //Using second SPI bus (both loaded)
 	busDevice->setSpeed(400000);      // If checksums on MAIN or QUAD are bad, try lowering this number
 	busDevice->setMode(SPIDevice::MODE0);
@@ -36,14 +36,16 @@ int main()
 	{
 
 		GPIO_1.toggleOutput();
+		//getJointAngles(motorCommand);
 		getMotorCommands(motorCommand);
 		busDevice->transfer(motorCommand, receive, SPI_TRANSMISSION_SIZE);
 		parseSPIfromMAIN(LEGdata, FSRdata, &MAINdata, &QUADdata, receive);
-		cout << endl << "        -----[" << (unsigned long int)counter << "]-----" << endl;
+		cout << endl << "        ------[[" << (unsigned long int)counter << "]]------" << endl;
 		//printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b00001);
-		printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b00011);
-		usleep(500000);
-		//
+		//printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b00011);
+		printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b01111);
+		usleep(1000000);
+
 
 		//if (MAINdata.dataError > 0)
 		//{
