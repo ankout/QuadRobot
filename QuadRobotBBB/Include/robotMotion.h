@@ -8,8 +8,8 @@
 #ifndef ROBOTMOTION_H_
 #define ROBOTMOTION_H_
 
-void getMotorCommands(unsigned char *);
-
-
+void getMotorCommands(unsigned char *, unsigned char *);
+void getJointAngles(unsigned char*, unsigned char*, float *);
+void getMotorCommands(unsigned char *, float *);
 
 #endif /* ROBOTMOTION_H_ */

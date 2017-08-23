@@ -15,6 +15,9 @@ using namespace exploringBB;
 int main()
 {
 	unsigned char motorCommand[SPI_TRANSMISSION_SIZE], receive[SPI_TRANSMISSION_SIZE];
+	float desiredAngle[NUM_ENCODERS*4]; // Unsigned integer representing desired angle of each joint (0-4095)
+	unsigned char forwardV, rotationV;
+
 	unsigned long int counter = 0;
 
 	struct LEG_PCB LEGdata[NUM_LEG_PCBS];
@@ -36,15 +39,17 @@ int main()
 	{
 
 		GPIO_1.toggleOutput();
-		//getJointAngles(motorCommand);
-		getMotorCommands(motorCommand);
+		//getRobotCommand(forwardV,rotationV);
+		getJointAngles(&forwardV, &rotationV, desiredAngle); // Input
+		getMotorCommands(motorCommand, desiredAngle);
+
 		busDevice->transfer(motorCommand, receive, SPI_TRANSMISSION_SIZE);
 		parseSPIfromMAIN(LEGdata, FSRdata, &MAINdata, &QUADdata, receive);
 		cout << endl << "        ------[[" << (unsigned long int)counter << "]]------" << endl;
 		//printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b00001);
 		//printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b00011);
-		printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b01111);
-		usleep(1000000);
+		printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b10001);
+		usleep(1000001);
 
 
 		//if (MAINdata.dataError > 0)

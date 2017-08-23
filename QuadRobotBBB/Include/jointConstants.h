@@ -1,0 +1,2 @@
+#ifndef JOINTCONSTANTS_H_
+#define JOINTCONSTANTS_H_
