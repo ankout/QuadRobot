@@ -10,6 +10,6 @@
 
 void getMotorCommands(unsigned char *, unsigned char *);
 void getJointAngles(unsigned char*, unsigned char*, float *);
-void getMotorCommands(unsigned char *, float *);
+void getMotorCommands(unsigned char *, float *, struct LEG_PCB *);
 
 #endif /* ROBOTMOTION_H_ */

@@ -17,7 +17,7 @@ int main()
 	unsigned char motorCommand[SPI_TRANSMISSION_SIZE], receive[SPI_TRANSMISSION_SIZE];
 	float desiredAngle[NUM_ENCODERS*4]; // Unsigned integer representing desired angle of each joint (0-4095)
 	unsigned char forwardV, rotationV;
-
+	unsigned short int OL;
 	unsigned long int counter = 0;
 
 	struct LEG_PCB LEGdata[NUM_LEG_PCBS];
@@ -28,6 +28,16 @@ int main()
 	SPIDevice *busDevice = new SPIDevice(1,0); //Using second SPI bus (both loaded)
 	busDevice->setSpeed(400000);      // If checksums on MAIN or QUAD are bad, try lowering this number
 	busDevice->setMode(SPIDevice::MODE0);
+
+	for (OL = 0; OL < (NUM_ENCODERS*4); OL++)
+	{
+		desiredAngle[OL] = 0.0f;
+	}
+
+	for (OL = 0; OL < SPI_TRANSMISSION_SIZE; OL++)
+	{
+		motorCommand[OL] = 0;
+	}
 
 	GPIO GPIO_1(61);
 	GPIO_1.setDirection(OUTPUT);
@@ -40,8 +50,8 @@ int main()
 
 		GPIO_1.toggleOutput();
 		//getRobotCommand(forwardV,rotationV);
-		getJointAngles(&forwardV, &rotationV, desiredAngle); // Input
-		getMotorCommands(motorCommand, desiredAngle);
+		//getJointAngles(&forwardV, &rotationV, desiredAngle); // Input
+		getMotorCommands(motorCommand, desiredAngle, LEGdata);
 
 		busDevice->transfer(motorCommand, receive, SPI_TRANSMISSION_SIZE);
 		parseSPIfromMAIN(LEGdata, FSRdata, &MAINdata, &QUADdata, receive);

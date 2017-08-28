@@ -21,6 +21,7 @@
 #define NUM_ENCODERS 5
 
 #define NUM_LEG_PCBS 5
+#define NUM_LEGS 4
 
 // QUAD
 // These checksums are on the five blocks of data in the SPI transmission (one from each LEG PCB)
