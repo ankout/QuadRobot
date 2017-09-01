@@ -33,4 +33,29 @@ const float encDir[20] = {
 		1.0f, 1.0f, 1.0f, 1.0f, 1.0f  // Leg 4
 };
 
+// PID Gains
+
+#define TS 0.01f // sampling period in seconds
+
+const float P_GAIN[20] = {
+		1.0f, 1.0f, 1.0f, 0.01f, 0.01f, // Leg 1
+		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, // Leg 2
+		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, // Leg 3
+		1.0f, 1.0f, 1.0f, 1.0f, 1.0f  // Leg 4
+};
+
+const float I_GAIN[20] = {
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Leg 1
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Leg 2
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Leg 3
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f  // Leg 4
+};
+
+const float D_GAIN[20] = {
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Leg 1
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Leg 2
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Leg 3
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f  // Leg 4
+};
+
 #endif /* JOINTCONSTANTS_H_ */

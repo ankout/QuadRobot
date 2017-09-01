@@ -272,6 +272,10 @@ void printSPIstream(unsigned char *p_receive)
 void printSensorData(struct LEG_PCB *p_LEGdata, struct FSR_PCBA *p_FSRdata, struct MAIN_PCBA *p_MAINdata, struct QUAD_ROBOT *p_QUADdata, unsigned char whichToPrint)
 {
 	unsigned char OL, IL, IIL;
+	static unsigned int counter;
+
+	cout << endl << "        ------[[" << (unsigned long int)counter << "]]------" << endl;
+	counter++;
 
 	for (OL = 0; OL < 5; OL++)
 	{

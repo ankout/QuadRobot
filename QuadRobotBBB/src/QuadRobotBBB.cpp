@@ -18,7 +18,6 @@ int main()
 	float desiredAngle[NUM_ENCODERS*4]; // Unsigned integer representing desired angle of each joint (0-4095)
 	unsigned char forwardV, rotationV;
 	unsigned short int OL;
-	unsigned long int counter = 0;
 
 	struct LEG_PCB LEGdata[NUM_LEG_PCBS];
 	struct FSR_PCBA FSRdata[NUM_LEG_PCBS];
@@ -55,11 +54,11 @@ int main()
 
 		busDevice->transfer(motorCommand, receive, SPI_TRANSMISSION_SIZE);
 		parseSPIfromMAIN(LEGdata, FSRdata, &MAINdata, &QUADdata, receive);
-		cout << endl << "        ------[[" << (unsigned long int)counter << "]]------" << endl;
+
 		//printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b00001);
 		//printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b00011);
-		printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b10001);
-		usleep(1000001);
+		//printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b10001);
+		//usleep(1000001);
 
 
 		//if (MAINdata.dataError > 0)
@@ -68,7 +67,7 @@ int main()
 		//	usleep(10000000);
 		//}
 
-		counter++;
+
 		//GPIO_1.toggleOutput();
 
 	}

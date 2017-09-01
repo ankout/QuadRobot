@@ -90,30 +90,18 @@ void getJointAngles(unsigned char *forwardV, unsigned char *rotationV, float *p_
 	// Leg 2: [5]-[9]
 	// Leg 3: [10]-[14]
 	// Leg 4: [15]-[19]
-	p_desiredAngle[3] = 160.1f;
-	p_desiredAngle[4] = 90.72f;
+	p_desiredAngle[3] = 25.0f;
+	p_desiredAngle[4] = 13.44f;
 }
 
 void getMotorCommands(unsigned char *p_motorCommand, float *p_desiredAngle, struct LEG_PCB *p_LEGdata)
 {
 	float currentJointAngle[NUM_ENCODERS*NUM_LEGS];
+	static float errorHist[NUM_ENCODERS*NUM_LEGS*3]; // This will contain the last three errors for each joint
+	static float uHist[NUM_ENCODERS*NUM_LEGS]; // contains previous control input
+	static float u[NUM_ENCODERS*NUM_LEGS]; // contains current control input
 
-	unsigned char OL, IL;
-
-	for (OL = 0; OL < NUM_LEGS; OL++)
-	{
-		for (IL = 0; IL < NUM_ENCODERS; IL++)
-		{
-			currentJointAngle[OL*NUM_ENCODERS+IL] =
-					(float)(p_LEGdata[OL].encoder[IL] - minEncRead[OL*NUM_ENCODERS+IL])*DEG_PER_BIT*encDir[OL*NUM_ENCODERS+IL] + angleAtMinEncoderReading[OL*NUM_ENCODERS+IL];
-
-			//cout << (int)(OL*NUM_ENCODERS+IL) << ")" << (float)currentJointAngle[OL*NUM_ENCODERS+IL] << endl;
-
-		}
-	}
-
-	printf("Angle %d) %f\n",4,currentJointAngle[3]);
-	printf("Angle %d) %f\n",5,currentJointAngle[4]);
+	unsigned char OL, IL, curJoint, IIL;
 
 	unsigned char check1Tx, check2Tx;
 	unsigned short int i;
@@ -126,6 +114,34 @@ void getMotorCommands(unsigned char *p_motorCommand, float *p_desiredAngle, stru
 	{
 		p_motorCommand[i] = 0xFF;
 	}
+
+//	for (OL = 0; OL < NUM_LEGS; OL++)
+//	{
+//		for (IL = 0; IL < NUM_ENCODERS; IL++)
+//		{
+//			curJoint = OL*NUM_ENCODERS+IL;
+//
+//			currentJointAngle[curJoint] =
+//					(float)(p_LEGdata[OL].encoder[IL] - minEncRead[curJoint])*DEG_PER_BIT*encDir[curJoint] + angleAtMinEncoderReading[curJoint];
+//			errorHist[curJoint] = p_desiredAngle[curJoint] - currentJointAngle[curJoint];
+//
+//			// Formula for control law from http://portal.ku.edu.tr/~cbasdogan/Courses/Robotics/projects/Discrete_PID.pdf
+//			u[curJoint] = uHist[curJoint] +
+//					(P_GAIN[curJoint] + I_GAIN[curJoint]*TS/2.0f + D_GAIN[curJoint]/TS)*errorHist[curJoint] +
+//					(-P_GAIN[curJoint] + I_GAIN[curJoint]*TS/2.0f - 2*D_GAIN[curJoint]/TS)*errorHist[curJoint+NUM_ENCODERS*NUM_LEGS] +
+//					(D_GAIN[curJoint]/TS)*errorHist[curJoint+NUM_ENCODERS*NUM_LEGS*2];
+//
+//			uHist[curJoint] = u[curJoint];
+//
+//			errorHist[curJoint+NUM_ENCODERS*NUM_LEGS*2] = errorHist[curJoint+NUM_ENCODERS*NUM_LEGS]; // error two samples ago (for next time gains are calculated)
+//			errorHist[curJoint+NUM_ENCODERS*NUM_LEGS] = errorHist[curJoint]; // error one sample ago (for next time gains are calculated)
+//		}
+//	}
+
+	//printf("Angle %d) %f\n",4,currentJointAngle[3]);
+	//printf("Angle %d) %f\n",5,currentJointAngle[4]);
+
+
 
 	sum1Tx = 0;
 	sum2Tx = 0;
