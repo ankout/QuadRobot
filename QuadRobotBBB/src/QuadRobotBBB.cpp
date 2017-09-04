@@ -49,7 +49,7 @@ int main()
 
 		GPIO_1.toggleOutput();
 		//getRobotCommand(forwardV,rotationV);
-		//getJointAngles(&forwardV, &rotationV, desiredAngle); // Input
+		getJointAngles(&forwardV, &rotationV, desiredAngle); // Input
 		getMotorCommands(motorCommand, desiredAngle, LEGdata);
 
 		busDevice->transfer(motorCommand, receive, SPI_TRANSMISSION_SIZE);
@@ -61,14 +61,14 @@ int main()
 		//usleep(1000001);
 
 
-		//if (MAINdata.dataError > 0)
-		//{
-		//	printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b00001);
-		//	usleep(10000000);
-		//}
+		if (MAINdata.dataError > 0)
+		{
+			printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b00001);
+			//usleep(10000000);
+		}
 
 
-		//GPIO_1.toggleOutput();
+		GPIO_1.toggleOutput();
 
 	}
 }

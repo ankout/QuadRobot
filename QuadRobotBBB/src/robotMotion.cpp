@@ -101,13 +101,14 @@ void getMotorCommands(unsigned char *p_motorCommand, float *p_desiredAngle, stru
 	static float uHist[NUM_ENCODERS*NUM_LEGS]; // contains previous control input
 	static float u[NUM_ENCODERS*NUM_LEGS]; // contains current control input
 
-	unsigned char OL, IL, curJoint, IIL, switchWith;
+	unsigned char OL, IL, curJoint;
+	//unsigned char IIL, switchWith;
 
 	unsigned char check1Tx, check2Tx;
 	unsigned short int i;
 	unsigned short int sum1Tx, sum2Tx;
 
-	unsigned char high = 20, low = 40;
+	//unsigned char high = 20, low = 40;
 
 	sum1Tx = 0;
 	sum2Tx = 0;
@@ -120,7 +121,7 @@ void getMotorCommands(unsigned char *p_motorCommand, float *p_desiredAngle, stru
 
 	for (OL = 0; OL < NUM_LEGS; OL++)
 	{
-		// These bits are assigned by ORing, so they need to be zeriod out beforehand
+		// These bits are assigned by ORing, so they need to be zeroed out beforehand
 		p_motorCommand[(OL+1)*NUM_ENCODERS+SPI_PREAMBLE_BYTES] = 0;
 
 		for (IL = 0; IL < NUM_ENCODERS; IL++)
@@ -154,123 +155,81 @@ void getMotorCommands(unsigned char *p_motorCommand, float *p_desiredAngle, stru
 		}
 	}
 
+	//printf("Angle %d) Current: %f\tDesired: %f\tu=%f\n",4,currentJointAngle[3],p_desiredAngle[3],u[3]);
+	printf("Angle %d) Current: %f\tDesired: %f\tu=%f\n",5,currentJointAngle[4],p_desiredAngle[4],u[4]);
+
 	for (OL = 0; OL < (NUM_ENCODERS*NUM_LEG_PCBS); OL++)
 	{
 		if (u[jointMapping[OL]] >= 0.0f)
 		{
 			// The math inside the indexer takes care of the preamble offset and the fact that every fifth entry is motor direction information
-			p_motorCommand[OL+(OL/NUM_ENCODERS)+SPI_PREAMBLE_BYTES] = (unsigned char)(uHist[curJoint] + 0.5f);
+			p_motorCommand[OL+(OL/NUM_ENCODERS)+SPI_PREAMBLE_BYTES] = 0.0f;//(unsigned char)(u[OL] + 0.5f);
 
+			// Set direction bit
 			// Direction bit is "1" if positive
-			p_motorCommand[NUM_ENCODERS + (1+NUM_ENCODERS)*(OL/NUM_ENCODERS) + SPI_PREAMBLE_BYTES] = //left of here
-
-
-
-					//p_motorCommand[(OL+1)*NUM_ENCODERS+SPI_PREAMBLE_BYTES] | (0b1 << IL);
+			p_motorCommand[NUM_ENCODERS + (1+NUM_ENCODERS)*(OL/NUM_ENCODERS) + SPI_PREAMBLE_BYTES] =
+					p_motorCommand[NUM_ENCODERS + (1+NUM_ENCODERS)*(OL/NUM_ENCODERS) + SPI_PREAMBLE_BYTES] | (0b1 << (OL % NUM_ENCODERS));
 
 		}
 
 		else
 		{
-			p_motorCommand[OL+(OL/NUM_ENCODERS)+SPI_PREAMBLE_BYTES] = (unsigned char)(-uHist[curJoint] + 0.5f);
+			p_motorCommand[OL+(OL/NUM_ENCODERS)+SPI_PREAMBLE_BYTES] = 0.0f;//(unsigned char)(-u[OL] + 0.5f);
 		}
 	}
 
-	// This byte is built up by ORing, so it needs to be zeroed out
-	p_motorCommand[31] = 0;
-
-	for (i = 26; i < 31; i++)
-	{
-		switch(i)
-		{
-			// "switchWith" is the motor number that needs to be swapped (0-based)
-			// "i" is the byte index (0-based)
-			// motor number 0 starts after SPI_PREAMBLE_BYTES
-
-			case 26:
-				switchWith = 12;
-			break;
-			case 27:
-				switchWith = 12;
-				break;
-			case 28:
-				switchWith = 12;
-				break;
-			case 29:
-				switchWith = 12;
-				break;
-			case 30:
-				switchWith = 12;
-				break;
-
-		}
-
-		p_motorCommand[i] = p_motorCommand[switchWith];
-		p_motorCommand[31] = p_motorCommand[31] | ((0b1 << (switchWith % NUM_ENCODERS)) & p_motorCommand
-
-		// Bytes 26-31 (0-based counting) pertain to PCB 5
-
-		p_motorCommand[27] = 0;
-		p_motorCommand[28] = 0;
-		p_motorCommand[29] = 0;
-		p_motorCommand[30] = 0;
-		p_motorCommand[31] = 0b00000;
-
-	////////////////////////////////
 
 	for (i = SPI_PREAMBLE_BYTES; i < (SPI_PREAMBLE_BYTES+SPI_TX_DATA_SIZE); i++)
 	{
-		sum1Tx = sum1Helper(sum1Tx, p_motorCommand[curJoint+SPI_PREAMBLE_BYTES]);
-		sum2Tx = sum2Helper(sum1Tx, sum1Tx);
-	}
-
-	check1Tx = check1Helper(sum1Tx, sum2Tx);
-	check2Tx = check2Helper(sum1Tx, check1Tx);
-
-	//printf("Angle %d) %f\n",4,currentJointAngle[3]);
-	//printf("Angle %d) %f\n",5,currentJointAngle[4]);
-
-	for (i = SPI_PREAMBLE_BYTES; i < (SPI_PREAMBLE_BYTES+SPI_TX_DATA_SIZE); i++)
-	{
-		p_motorCommand[i] = i-SPI_PREAMBLE_BYTES;
-
-		if ((i == 4) | (i == 10) | (i == 16) | (i == 21) | (i == 26))
-		{
-			p_motorCommand[i] = high;
-		}
-
-		else if ((i == 5) | (i == 11) | (i == 17) | (i == 22) | (i == 27))
-		{
-			p_motorCommand[i] = high;
-		}
-
-		else if ((i == 6) | (i == 12) | (i == 18) | (i == 23) | (i == 28))
-		{
-			p_motorCommand[i] = high;
-		}
-
-		else if ((i == 7) | (i == 13) | (i == 19) | (i == 24) | (i == 29))
-		{
-			p_motorCommand[i] = low;
-		}
-
-		else if ((i == 8) | (i == 14) | (i == 20) | (i == 25) | (i == 30))
-		{
-			p_motorCommand[i] = low;
-		}
-
-		else if ((i == 9) | (i == 15) | (i == 21) | (i == 26) | (i == 31))
-		{
-			p_motorCommand[i] = 0b10100;
-		}
-
-
 		sum1Tx = sum1Helper(sum1Tx, p_motorCommand[i]);
 		sum2Tx = sum2Helper(sum1Tx, sum1Tx);
 	}
 
 	check1Tx = check1Helper(sum1Tx, sum2Tx);
 	check2Tx = check2Helper(sum1Tx, check1Tx);
+
+
+//	for (i = SPI_PREAMBLE_BYTES; i < (SPI_PREAMBLE_BYTES+SPI_TX_DATA_SIZE); i++)
+//	{
+//		p_motorCommand[i] = i-SPI_PREAMBLE_BYTES;
+//
+//		if ((i == 4) | (i == 10) | (i == 16) | (i == 22) | (i == 28))
+//		{
+//			p_motorCommand[i] = high;
+//		}
+//
+//		else if ((i == 5) | (i == 11) | (i == 17) | (i == 23) | (i == 29))
+//		{
+//			p_motorCommand[i] = high;
+//		}
+//
+//		else if ((i == 6) | (i == 12) | (i == 18) | (i == 24) | (i == 30))
+//		{
+//			p_motorCommand[i] = high;
+//		}
+//
+//		else if ((i == 7) | (i == 13) | (i == 19) | (i == 25) | (i == 31))
+//		{
+//			p_motorCommand[i] = low;
+//		}
+//
+//		else if ((i == 8) | (i == 14) | (i == 20) | (i == 26) | (i == 32))
+//		{
+//			p_motorCommand[i] = low;
+//		}
+//
+//		else if ((i == 9) | (i == 15) | (i == 21) | (i == 27) | (i == 33))
+//		{
+//			p_motorCommand[i] = 0b10100;
+//		}
+//
+//
+//		sum1Tx = sum1Helper(sum1Tx, p_motorCommand[i]);
+//		sum2Tx = sum2Helper(sum1Tx, sum1Tx);
+//	}
+
+//	check1Tx = check1Helper(sum1Tx, sum2Tx);
+//	check2Tx = check2Helper(sum1Tx, check1Tx);
 
 	p_motorCommand[SPI_PREAMBLE_BYTES+SPI_TX_DATA_SIZE] = check1Tx;
 	p_motorCommand[SPI_PREAMBLE_BYTES+SPI_TX_DATA_SIZE+1] = check2Tx;

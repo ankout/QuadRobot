@@ -38,7 +38,7 @@ const float encDir[20] = {
 #define TS 0.01f // sampling period in seconds
 
 const float P_GAIN[20] = {
-		1.0f, 1.0f, 1.0f, 0.0001f, 0.0001f, // Leg 1
+		1.0f, 1.0f, 1.0f, 0.5f, 0.5f, // Leg 1
 		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, // Leg 2
 		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, // Leg 3
 		1.0f, 1.0f, 1.0f, 1.0f, 1.0f  // Leg 4
@@ -77,15 +77,21 @@ const float D_GAIN[20] = {
 // commands are not continuous in motorCommand[] like they are in u[] because motorCommand[]
 // interleaves direction commands after each group of five motor commands (one direction command per PCB)
 // If a number is repeated in jointAssignments[] that means that one joint is driven by two motors
+//const unsigned char jointMapping[25] = {
+//		0, 0, 1, 2, 3,
+//		5, 5, 6, 7, 8,
+//		10, 10, 11, 12, 13,
+//		15, 15, 16, 17, 18,
+//		4, 9, 14, 19, 19}; // The last entry doesn't matter because there is no motor on that channel
+
 const unsigned char jointMapping[25] = {
-		0, 0, 1, 2, 3,
-		5, 5, 6, 7, 8,
-		10, 10, 11, 12, 13,
-		15, 15, 16, 17, 18,
-		4, 9, 14, 19, 19}; // The last entry doesn't matter because there is no motor on that channel
+		0, 1, 2, 3, 4,
+		5, 6, 7, 8, 9,
+		10, 11, 12, 13, 14,
+		15, 16, 17, 18, 19,
+		15, 16, 17, 18, 19}; // The last entry doesn't matter because there is no motor on that channel
 
-
-#define U_MAX 10.0f
+#define U_MAX 40.0f
 
 
 #endif /* JOINTCONSTANTS_H_ */
