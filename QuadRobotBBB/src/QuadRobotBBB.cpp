@@ -46,11 +46,12 @@ int main()
 
 	while (1)
 	{
-
 		GPIO_1.toggleOutput();
 		//getRobotCommand(forwardV,rotationV);
 		getJointAngles(&forwardV, &rotationV, desiredAngle); // Input
 		getMotorCommands(motorCommand, desiredAngle, LEGdata);
+		//motorCommand[9] = 0b10000;
+	    //printf("\t\tDuty [5]: %d, Direction: %d\n",motorCommand[8],motorCommand[9]);
 
 		busDevice->transfer(motorCommand, receive, SPI_TRANSMISSION_SIZE);
 		parseSPIfromMAIN(LEGdata, FSRdata, &MAINdata, &QUADdata, receive);
@@ -66,10 +67,6 @@ int main()
 			printSensorData(LEGdata, FSRdata, &MAINdata, &QUADdata, 0b00001);
 			//usleep(10000000);
 		}
-
-
-		GPIO_1.toggleOutput();
-
 	}
 }
 
