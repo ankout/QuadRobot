@@ -33,7 +33,13 @@ int main()
 		desiredAngle[OL] = 0.0f;
 	}
 
-	for (OL = 0; OL < SPI_TRANSMISSION_SIZE; OL++)
+	// The first four bytes are preamble bytes
+	for (OL = 0; OL < SPI_PREAMBLE_BYTES; OL++)
+	{
+		motorCommand[OL] = 0xFF;
+	}
+
+	for (OL = SPI_PREAMBLE_BYTES; OL < (SPI_PREAMBLE_BYTES+SPI_TX_DATA_SIZE+SPI_CHECKSUM_SIZE); OL++)
 	{
 		motorCommand[OL] = 0;
 	}
@@ -44,14 +50,18 @@ int main()
 	GPIO GPIO_2(22);
 	GPIO_2.setDirection(OUTPUT);
 
+	// Run Once to get encoder positions
+	busDevice->transfer(motorCommand, receive, SPI_TRANSMISSION_SIZE);
+	parseSPIfromMAIN(LEGdata, FSRdata, &MAINdata, &QUADdata, receive);
+	usleep(10000);
+
 	while (1)
 	{
 		GPIO_1.toggleOutput();
 		//getRobotCommand(forwardV,rotationV);
 		getJointAngles(&forwardV, &rotationV, desiredAngle); // Input
 		getMotorCommands(motorCommand, desiredAngle, LEGdata);
-		//motorCommand[9] = 0b10000;
-	    //printf("\t\tDuty [5]: %d, Direction: %d\n",motorCommand[8],motorCommand[9]);
+
 
 		busDevice->transfer(motorCommand, receive, SPI_TRANSMISSION_SIZE);
 		parseSPIfromMAIN(LEGdata, FSRdata, &MAINdata, &QUADdata, receive);

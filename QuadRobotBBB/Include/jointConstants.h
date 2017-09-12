@@ -4,21 +4,21 @@
 #define DEG_PER_BIT 0.087890625f // Number of degrees per bit of a 4096 count encoder
 
 const unsigned short int minEncRead[20] = {
-		100, 100, 100, 1230, 1420, // Leg 1
+		1420, 1230, 100, 100, 100, // Leg 1
 		100, 100, 100, 100, 100, // Leg 2
 		100, 100, 100, 100, 100, // Leg 3
 		100, 100, 100, 100, 100 // Leg 4
 };
 
 const unsigned short int maxEncRead[20] = {
-		2000, 2000, 2000, 2386, 2454, // Leg 1
+		2454, 2386, 2000, 2000, 2000, // Leg 1
 		2000, 2000, 2000, 2000, 2000, // Leg 2
 		2000, 2000, 2000, 2000, 2000, // Leg 3
 		2000, 2000, 2000, 2000, 2000 // Leg 4
 };
 
 const float angleAtMinEncoderReading[20] = {
-		30.6f, 30.6f, 30.6f, -45.0f, -45.0f, // Leg 1
+		-45.0f, -45.0f, 30.6f, 30.6f, 30.6f, // Leg 1
 		30.6f, 30.6f, 30.6f, 30.6f, 30.6f, // Leg 2
 		30.6f, 30.6f, 30.6f, 30.6f, 30.6f, // Leg 3
 		30.6f, 30.6f, 30.6f, 30.6f, 30.6f // Leg 4
@@ -38,21 +38,29 @@ const float encDir[20] = {
 #define TS 0.01f // sampling period in seconds
 
 const float P_GAIN[20] = {
-		0.5f, 0.5f, 0.5f, 0.5f, 0.5f, // Leg 1
+		35.0f, 35.0f, 0.5f, 0.5f, 0.5f, // Leg 1
 		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, // Leg 2
 		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, // Leg 3
 		1.0f, 1.0f, 1.0f, 1.0f, 1.0f  // Leg 4
 };
 
 const float I_GAIN[20] = {
-		0.0f, 0.0f, 0.0f, 0.1f, 0.1f, // Leg 1
+		0.0f, 0.0f, 0.1f, 0.1f, 0.1f, // Leg 1
 		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Leg 2
 		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Leg 3
 		0.0f, 0.0f, 0.0f, 0.0f, 0.0f  // Leg 4
 };
 
 const float D_GAIN[20] = {
-		0.0f, 0.0f, 0.0f, 0.1f, 0.1f, // Leg 1
+		0.0f, 0.0f, 0.1f, 0.1f, 0.1f, // Leg 1
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Leg 2
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Leg 3
+		0.0f, 0.0f, 0.0f, 0.0f, 0.0f  // Leg 4
+};
+
+// Max duty cycle change from one sample to another
+const float RATE_LIMIT[20] = {
+		50.0f, 50.0f, 1.0f, 1.0f, 1.0f, // Leg 1
 		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Leg 2
 		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Leg 3
 		0.0f, 0.0f, 0.0f, 0.0f, 0.0f  // Leg 4
@@ -77,7 +85,7 @@ const float D_GAIN[20] = {
 // commands are not continuous in motorCommand[] like they are in u[] because motorCommand[]
 // interleaves direction commands after each group of five motor commands (one direction command per PCB)
 // If a number is repeated in jointAssignments[] that means that one joint is driven by two motors
-//const unsigned char jointMapping[25] = {
+// const unsigned char jointMapping[25] = {
 //		0, 0, 1, 2, 3,
 //		5, 5, 6, 7, 8,
 //		10, 10, 11, 12, 13,
@@ -91,7 +99,7 @@ const unsigned char jointMapping[25] = {
 		15, 16, 17, 18, 19,
 		15, 16, 17, 18, 19}; // The last entry doesn't matter because there is no motor on that channel
 
-#define U_MAX 40.0f
+#define U_MAX 180.0f
 
 
 #endif /* JOINTCONSTANTS_H_ */

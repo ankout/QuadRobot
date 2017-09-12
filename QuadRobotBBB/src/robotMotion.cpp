@@ -90,15 +90,15 @@ void getJointAngles(unsigned char *forwardV, unsigned char *rotationV, float *p_
 	// Leg 2: [5]-[9]
 	// Leg 3: [10]-[14]
 	// Leg 4: [15]-[19]
-	p_desiredAngle[3] = 25.0f;
-	p_desiredAngle[4] = 13.44f;
+	p_desiredAngle[0] = 25.0f;
+	p_desiredAngle[1] = 13.44f;
 }
 
 void getMotorCommands(unsigned char *p_motorCommand, float *p_desiredAngle, struct LEG_PCB *p_LEGdata)
 {
 	float currentJointAngle[NUM_ENCODERS*NUM_LEGS];
 	static float errorHist[NUM_ENCODERS*NUM_LEGS*3]; // This will contain the last three errors for each joint
-	static float uHist[NUM_ENCODERS*NUM_LEGS]; // contains previous control input
+	static float uHist[NUM_ENCODERS*NUM_LEGS]; // contains past control input
 	static float u[NUM_ENCODERS*NUM_LEGS]; // contains current control input
 
 	unsigned char OL, IL, curJoint;
@@ -137,12 +137,50 @@ void getMotorCommands(unsigned char *p_motorCommand, float *p_desiredAngle, stru
 					(float)(p_LEGdata[OL].encoder[IL] - minEncRead[curJoint])*DEG_PER_BIT*encDir[curJoint] + angleAtMinEncoderReading[curJoint];
 			errorHist[curJoint] = p_desiredAngle[curJoint] - currentJointAngle[curJoint];
 
-			// Formula for control law from http://portal.ku.edu.tr/~cbasdogan/Courses/Robotics/projects/Discrete_PID.pdf
-//			u[curJoint] = u[curJoint] +
-//					(P_GAIN[curJoint] + I_GAIN[curJoint]*TS/2.0f + D_GAIN[curJoint]/TS)*errorHist[curJoint] +
-//					(-P_GAIN[curJoint] + I_GAIN[curJoint]*TS/2.0f - 2*D_GAIN[curJoint]/TS)*errorHist[curJoint+NUM_ENCODERS*NUM_LEGS] +
-//					(D_GAIN[curJoint]/TS)*errorHist[curJoint+NUM_ENCODERS*NUM_LEGS*2];
-			u[curJoint] = (P_GAIN[curJoint])*errorHist[curJoint];
+//			 Formula for control law from http://portal.ku.edu.tr/~cbasdogan/Courses/Robotics/projects/Discrete_PID.pdf
+			u[curJoint] = u[curJoint] +
+					(P_GAIN[curJoint] + I_GAIN[curJoint]*TS/2.0f + D_GAIN[curJoint]/TS)*errorHist[curJoint] +
+					(-P_GAIN[curJoint] + I_GAIN[curJoint]*TS/2.0f - 2*D_GAIN[curJoint]/TS)*errorHist[curJoint+NUM_ENCODERS*NUM_LEGS] +
+					(D_GAIN[curJoint]/TS)*errorHist[curJoint+NUM_ENCODERS*NUM_LEGS*2];
+
+			if (OL == 0)
+			{
+				if (IL == 0)
+				{
+					printf("[1] - dP: %f dI: %f dD: %f u: %f\n",
+							P_GAIN[0]*(errorHist[0]-errorHist[0+NUM_ENCODERS*NUM_LEGS]),
+							I_GAIN[0]*TS/2.0f*(errorHist[0]+errorHist[0+NUM_ENCODERS*NUM_LEGS]),
+							D_GAIN[0]/TS*(errorHist[0]-2*errorHist[0+NUM_ENCODERS*NUM_LEGS]+errorHist[0+NUM_ENCODERS*NUM_LEGS*2]),
+							u[0]);
+
+				}
+
+//				else if (IL == 1)
+//				{
+//					printf("\t[2] - dP: %f dI: %f dD: %f\n",
+//							P_GAIN[1]*(errorHist[1]-errorHist[1+NUM_ENCODERS*NUM_LEGS]),
+//							I_GAIN[1]*TS/2.0f*(errorHist[1]+errorHist[1+NUM_ENCODERS*NUM_LEGS]),
+//							D_GAIN[1]/TS*(errorHist[1]-2*errorHist[1+NUM_ENCODERS*NUM_LEGS]+errorHist[1+NUM_ENCODERS*NUM_LEGS*2]));
+//				}
+			}
+
+
+			if (u[curJoint] >= uHist[curJoint])
+			{
+				if ((u[curJoint] - uHist[curJoint]) > RATE_LIMIT[curJoint])
+				{
+					u[curJoint] = uHist[curJoint] + RATE_LIMIT[curJoint];
+				}
+			}
+
+			else
+			{
+				if ((uHist[curJoint] - u[curJoint]) > RATE_LIMIT[curJoint])
+				{
+					u[curJoint] = uHist[curJoint] - RATE_LIMIT[curJoint];
+				}
+
+			}
 
 			if (u[curJoint] > U_MAX)
 			{
@@ -154,7 +192,7 @@ void getMotorCommands(unsigned char *p_motorCommand, float *p_desiredAngle, stru
 				u[curJoint] = -U_MAX;
 			}
 
-			//uHist[curJoint] = u[curJoint];
+			uHist[curJoint] = u[curJoint];
 
 			errorHist[curJoint+NUM_ENCODERS*NUM_LEGS*2] = errorHist[curJoint+NUM_ENCODERS*NUM_LEGS]; // error two samples ago (for next time gains are calculated)
 			errorHist[curJoint+NUM_ENCODERS*NUM_LEGS] = errorHist[curJoint]; // error one sample ago (for next time gains are calculated)
@@ -197,8 +235,8 @@ void getMotorCommands(unsigned char *p_motorCommand, float *p_desiredAngle, stru
 
 	}
 
-	printf("Angle %d) Desired: %f Current: %f u=%d  Direction: %d\n",1,p_desiredAngle[0],currentJointAngle[0],p_motorCommand[4],p_motorCommand[9]);
-	//printf("\tAngle %d) Desired: %f Current: %f u=%f  Direction: %d\n",5,p_desiredAngle[4],currentJointAngle[4],u[4],p_motorCommand[9]);
+	printf("\tAngle %d) Desired: %f Current: %f u=%d  Direction: %d\n",1,p_desiredAngle[0],currentJointAngle[0],p_motorCommand[4],p_motorCommand[9]);
+//	printf("\tAngle %d) Desired: %f Current: %f u=%d  Direction: %d\n",2,p_desiredAngle[1],currentJointAngle[1],p_motorCommand[5],p_motorCommand[9]);
 
 	//for (OL = SPI_PREAMBLE_BYTES; OL < (SPI_PREAMBLE_BYTES+6); OL++)
 	//{
