@@ -38,14 +38,14 @@ const float encDir[20] = {
 #define TS 0.01f // sampling period in seconds
 
 const float P_GAIN[20] = {
-		35.0f, 35.0f, 0.5f, 0.5f, 0.5f, // Leg 1
+		3.0f, 3.0f, 0.5f, 0.5f, 0.5f, // Leg 1
 		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, // Leg 2
 		1.0f, 1.0f, 1.0f, 1.0f, 1.0f, // Leg 3
 		1.0f, 1.0f, 1.0f, 1.0f, 1.0f  // Leg 4
 };
 
 const float I_GAIN[20] = {
-		0.0f, 0.0f, 0.1f, 0.1f, 0.1f, // Leg 1
+		5.0f, 5.0f, 0.1f, 0.1f, 0.1f, // Leg 1
 		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Leg 2
 		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Leg 3
 		0.0f, 0.0f, 0.0f, 0.0f, 0.0f  // Leg 4
@@ -60,7 +60,7 @@ const float D_GAIN[20] = {
 
 // Max duty cycle change from one sample to another
 const float RATE_LIMIT[20] = {
-		50.0f, 50.0f, 1.0f, 1.0f, 1.0f, // Leg 1
+		20.0f, 20.0f, 1.0f, 1.0f, 1.0f, // Leg 1
 		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Leg 2
 		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Leg 3
 		0.0f, 0.0f, 0.0f, 0.0f, 0.0f  // Leg 4
